@@ -193,7 +193,7 @@ public enum SubSkillType {
     public String getPermissionNodeAddress() {
         if (permissionNodeAddress == null) {
             permissionNodeAddress =
-                    "mcmmo.ability." + getParentSkill().toString().toLowerCase(Locale.ENGLISH)
+                    "mcrpg.ability." + getParentSkill().toString().toLowerCase(Locale.ENGLISH)
                             + "." + getConfigName(toString()).toLowerCase(Locale.ENGLISH);
         }
 

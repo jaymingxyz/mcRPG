@@ -8,10 +8,8 @@ import com.gmail.nossr50.commands.McmmoCommand;
 import com.gmail.nossr50.commands.McnotifyCommand;
 import com.gmail.nossr50.commands.McrefreshCommand;
 import com.gmail.nossr50.commands.McscoreboardCommand;
-import com.gmail.nossr50.commands.XprateCommand;
 import com.gmail.nossr50.commands.admin.McmmoReloadLocaleCommand;
 import com.gmail.nossr50.commands.admin.PlayerDebugCommand;
-import com.gmail.nossr50.commands.chat.McChatSpy;
 import com.gmail.nossr50.commands.database.McpurgeCommand;
 import com.gmail.nossr50.commands.database.McremoveCommand;
 import com.gmail.nossr50.commands.database.MmoshowdbCommand;
@@ -19,8 +17,6 @@ import com.gmail.nossr50.commands.experience.AddlevelsCommand;
 import com.gmail.nossr50.commands.experience.AddxpCommand;
 import com.gmail.nossr50.commands.experience.MmoeditCommand;
 import com.gmail.nossr50.commands.experience.SkillresetCommand;
-import com.gmail.nossr50.commands.party.PartyCommand;
-import com.gmail.nossr50.commands.party.teleport.PtpCommand;
 import com.gmail.nossr50.commands.player.InspectCommand;
 import com.gmail.nossr50.commands.player.McRankCommand;
 import com.gmail.nossr50.commands.player.McTopCommand;
@@ -50,6 +46,9 @@ import com.gmail.nossr50.commands.skills.WoodcuttingCommand;
 import com.gmail.nossr50.datatypes.skills.PrimarySkillType;
 import com.gmail.nossr50.locale.LocaleLoader;
 import com.gmail.nossr50.mcMMO;
+import com.gmail.nossr50.mcrpg.commands.AbandonSkillCommand;
+import com.gmail.nossr50.mcrpg.commands.ChooseSkillCommand;
+import com.gmail.nossr50.mcrpg.commands.SetSkillCommand;
 import com.gmail.nossr50.util.text.StringUtils;
 import java.util.Arrays;
 import java.util.List;
@@ -94,163 +93,152 @@ public final class CommandRegistrationManager {
 
     private static final List<CommandSpec> COMMAND_SPECS = List.of(
             // Generic Commands
-            spec("mmoxpbar", null, () -> List.of(
-                    LocaleLoader.getString("Commands.Usage.1", "mmoxpbar", "<reset | disable>"),
-                    LocaleLoader.getString("Commands.Usage.2", "mmoxpbar",
+            spec("rpgxpbar", null, () -> List.of(
+                    LocaleLoader.getString("Commands.Usage.1", "rpgxpbar", "<reset | disable>"),
+                    LocaleLoader.getString("Commands.Usage.2", "rpgxpbar",
                             "<show | hide | disable>", "<skillname>")),
                     XPBarCommand::new),
-            spec("mmoinfo", "mcmmo.commands.mmoinfo", () -> List.of(
-                    LocaleLoader.getString("Commands.Usage.1", "mmoinfo",
+            spec("rpginfo", "mcrpg.commands.info", () -> List.of(
+                    LocaleLoader.getString("Commands.Usage.1", "rpginfo",
                             "[" + LocaleLoader.getString("Commands.Usage.SubSkill") + "]")),
                     MmoInfoCommand::new),
-            // No permission required on mmodebug to save support headaches
-            spec("mmodebug", null, () -> List.of(
-                    LocaleLoader.getString("Commands.Usage.0", "mmodebug")),
+            // No permission required on rpgdebug to save support headaches
+            spec("rpgdebug", null, () -> List.of(
+                    LocaleLoader.getString("Commands.Usage.0", "rpgdebug")),
                     PlayerDebugCommand::new),
-            spec("mcability", "mcmmo.commands.mcability;mcmmo.commands.mcability.others",
-                    () -> List.of(LocaleLoader.getString("Commands.Usage.1", "mcability",
+            spec("rpgability", "mcrpg.commands.ability;mcrpg.commands.ability.others",
+                    () -> List.of(LocaleLoader.getString("Commands.Usage.1", "rpgability",
                             "[" + LocaleLoader.getString("Commands.Usage.Player") + "]")),
                     McabilityCommand::new),
-            spec("mcgod", "mcmmo.commands.mcgod;mcmmo.commands.mcgod.others", () -> List.of(
-                    LocaleLoader.getString("Commands.Usage.1", "mcgod",
+            spec("rpggod", "mcrpg.commands.god;mcrpg.commands.god.others", () -> List.of(
+                    LocaleLoader.getString("Commands.Usage.1", "rpggod",
                             "[" + LocaleLoader.getString("Commands.Usage.Player") + "]")),
                     McgodCommand::new),
-            spec("mcchatspy", "mcmmo.commands.mcchatspy;mcmmo.commands.mcchatspy.others",
-                    () -> List.of(LocaleLoader.getString("Commands.Usage.1", "mcchatspy",
-                            "[" + LocaleLoader.getString("Commands.Usage.Player") + "]")),
-                    McChatSpy::new),
-            spec("mcmmo", "mcmmo.commands.mcmmo.description;mcmmo.commands.mcmmo.help",
-                    () -> List.of(LocaleLoader.getString("Commands.Usage.0", "mcmmo"),
-                            LocaleLoader.getString("Commands.Usage.1", "mcmmo", "help")),
+            // /mcchatspy only spies on party chat, which mcRPG doesn't have
+            spec("mcrpg", "mcrpg.commands.mcrpg.description;mcrpg.commands.mcrpg.help",
+                    () -> List.of(LocaleLoader.getString("Commands.Usage.0", "mcrpg"),
+                            LocaleLoader.getString("Commands.Usage.1", "mcrpg", "help")),
                     McmmoCommand::new),
-            spec("mcnotify", "mcmmo.commands.mcnotify", () -> List.of(
-                    LocaleLoader.getString("Commands.Usage.0", "mcnotify")),
+            spec("rpgnotify", "mcrpg.commands.notify", () -> List.of(
+                    LocaleLoader.getString("Commands.Usage.0", "rpgnotify")),
                     McnotifyCommand::new),
-            spec("mclevelupsound", "mcmmo.commands.mclevelupsound", () -> List.of(
-                    LocaleLoader.getString("Commands.Usage.0", "mclevelupsound")),
+            spec("rpglevelupsound", "mcrpg.commands.levelupsound", () -> List.of(
+                    LocaleLoader.getString("Commands.Usage.0", "rpglevelupsound")),
                     McLevelUpSoundCommand::new),
-            spec("mcrefresh", "mcmmo.commands.mcrefresh;mcmmo.commands.mcrefresh.others",
-                    () -> List.of(LocaleLoader.getString("Commands.Usage.1", "mcrefresh",
+            spec("rpgrefresh", "mcrpg.commands.refresh;mcrpg.commands.refresh.others",
+                    () -> List.of(LocaleLoader.getString("Commands.Usage.1", "rpgrefresh",
                             "[" + LocaleLoader.getString("Commands.Usage.Player") + "]")),
                     McrefreshCommand::new),
-            spec("mcscoreboard",
-                    () -> "Change the current mcMMO scoreboard being displayed", //TODO: Localize
-                    "mcmmo.commands.mcscoreboard", () -> List.of(
-                            LocaleLoader.getString("Commands.Usage.1", "mcscoreboard",
+            spec("rpgscoreboard",
+                    () -> "Change the current mcRPG scoreboard being displayed", //TODO: Localize
+                    "mcrpg.commands.scoreboard", () -> List.of(
+                            LocaleLoader.getString("Commands.Usage.1", "rpgscoreboard",
                                     "<CLEAR | KEEP>"),
-                            LocaleLoader.getString("Commands.Usage.2", "mcscoreboard", "time",
+                            LocaleLoader.getString("Commands.Usage.2", "rpgscoreboard", "time",
                                     "<seconds>")),
                     McscoreboardCommand::new),
-            new CommandSpec("xprate",
-                    () -> LocaleLoader.getString("Commands.Description.xprate"),
-                    "mcmmo.commands.xprate;mcmmo.commands.xprate.reset;"
-                            + "mcmmo.commands.xprate.set;mcmmo.commands.xprate.show",
-                    () -> List.of(LocaleLoader.getString("Commands.Usage.3", "xprate",
-                                    "[" + LocaleLoader.getString("Commands.Usage.Skill")
-                                            + "|all]",
-                                    "<" + LocaleLoader.getString("Commands.Usage.Rate") + ">",
-                                    "[true|false]"),
-                            LocaleLoader.getString("Commands.Usage.1", "xprate", "reset"),
-                            LocaleLoader.getString("Commands.Usage.0", "xprate")),
-                    XprateCommand::new, List.of("mcxprate"), false),
+            // mcRPG has no XP events, so /xprate is not registered
 
             // Database Commands
-            spec("mcpurge", () -> LocaleLoader.getString("Commands.Description.mcpurge",
-                    mcMMO.p.getGeneralConfig().getOldUsersCutoff()), "mcmmo.commands.mcpurge",
-                    () -> List.of(LocaleLoader.getString("Commands.Usage.0", "mcpurge")),
+            spec("rpgpurge", () -> LocaleLoader.getString("Commands.Description.rpgpurge",
+                    mcMMO.p.getGeneralConfig().getOldUsersCutoff()), "mcrpg.commands.purge",
+                    () -> List.of(LocaleLoader.getString("Commands.Usage.0", "rpgpurge")),
                     McpurgeCommand::new),
-            spec("mcremove", "mcmmo.commands.mcremove", () -> List.of(
-                    LocaleLoader.getString("Commands.Usage.1", "mcremove",
+            spec("rpgremove", "mcrpg.commands.remove", () -> List.of(
+                    LocaleLoader.getString("Commands.Usage.1", "rpgremove",
                             "<" + LocaleLoader.getString("Commands.Usage.Player") + ">")),
                     McremoveCommand::new),
-            spec("mmoshowdb", "mcmmo.commands.mmoshowdb", () -> List.of(
-                    LocaleLoader.getString("Commands.Usage.0", "mmoshowdb")),
+            spec("rpgshowdb", "mcrpg.commands.showdb", () -> List.of(
+                    LocaleLoader.getString("Commands.Usage.0", "rpgshowdb")),
                     MmoshowdbCommand::new),
-            spec("mcconvert",
-                    "mcmmo.commands.mcconvert;mcmmo.commands.mcconvert.experience;"
-                            + "mcmmo.commands.mcconvert.database",
-                    () -> List.of(LocaleLoader.getString("Commands.Usage.2", "mcconvert",
+            spec("rpgconvert",
+                    "mcrpg.commands.convert;mcrpg.commands.convert.experience;"
+                            + "mcrpg.commands.convert.database",
+                    () -> List.of(LocaleLoader.getString("Commands.Usage.2", "rpgconvert",
                                     "database", "<flatfile|sql>"),
-                            LocaleLoader.getString("Commands.Usage.2", "mcconvert", "experience",
+                            LocaleLoader.getString("Commands.Usage.2", "rpgconvert", "experience",
                                     "<linear|exponential>")),
                     McconvertCommand::new),
 
             // Experience Commands
-            spec("addlevels", "mcmmo.commands.addlevels;mcmmo.commands.addlevels.others",
-                    () -> List.of(LocaleLoader.getString("Commands.Usage.3.XP", "addlevels",
+            spec("rpgaddlevels", "mcrpg.commands.addlevels;mcrpg.commands.addlevels.others",
+                    () -> List.of(LocaleLoader.getString("Commands.Usage.3.XP", "rpgaddlevels",
                             "[" + LocaleLoader.getString("Commands.Usage.Player") + "]",
                             "<" + LocaleLoader.getString("Commands.Usage.Skill") + ">",
                             "<" + LocaleLoader.getString("Commands.Usage.Level") + ">")),
                     AddlevelsCommand::new),
-            spec("addxp", "mcmmo.commands.addxp;mcmmo.commands.addxp.others", () -> List.of(
-                    LocaleLoader.getString("Commands.Usage.3.XP", "addxp",
+            spec("rpgaddxp", "mcrpg.commands.addxp;mcrpg.commands.addxp.others", () -> List.of(
+                    LocaleLoader.getString("Commands.Usage.3.XP", "rpgaddxp",
                             "[" + LocaleLoader.getString("Commands.Usage.Player") + "]",
                             "<" + LocaleLoader.getString("Commands.Usage.Skill") + ">",
                             "<" + LocaleLoader.getString("Commands.Usage.XP") + ">")),
                     AddxpCommand::new),
-            spec("mmoedit", "mcmmo.commands.mmoedit;mcmmo.commands.mmoedit.others",
-                    () -> List.of(LocaleLoader.getString("Commands.Usage.3.XP", "mmoedit",
+            spec("rpgsetlevel", "mcrpg.commands.setlevel;mcrpg.commands.setlevel.others",
+                    () -> List.of(LocaleLoader.getString("Commands.Usage.3.XP", "rpgsetlevel",
                             "[" + LocaleLoader.getString("Commands.Usage.Player") + "]",
                             "<" + LocaleLoader.getString("Commands.Usage.Skill") + ">",
                             "<" + LocaleLoader.getString("Commands.Usage.Level") + ">")),
                     MmoeditCommand::new),
             // Only the main permission nodes are needed here, not the per-skill ones
-            spec("skillreset", "mcmmo.commands.skillreset;mcmmo.commands.skillreset.others",
-                    () -> List.of(LocaleLoader.getString("Commands.Usage.2", "skillreset",
+            spec("rpgskillreset", "mcrpg.commands.skillreset;mcrpg.commands.skillreset.others",
+                    () -> List.of(LocaleLoader.getString("Commands.Usage.2", "rpgskillreset",
                             "[" + LocaleLoader.getString("Commands.Usage.Player") + "]",
                             "<" + LocaleLoader.getString("Commands.Usage.Skill") + ">")),
                     SkillresetCommand::new),
 
-            // Party Commands (only registered while the party system is enabled)
-            new CommandSpec("party", () -> LocaleLoader.getString("Commands.Description.party"),
-                    "mcmmo.commands.party;mcmmo.commands.party.accept;mcmmo.commands.party.create;"
-                            + "mcmmo.commands.party.disband;mcmmo.commands.party.xpshare;"
-                            + "mcmmo.commands.party.invite;mcmmo.commands.party.itemshare;"
-                            + "mcmmo.commands.party.join;mcmmo.commands.party.kick;"
-                            + "mcmmo.commands.party.lock;mcmmo.commands.party.owner;"
-                            + "mcmmo.commands.party.password;mcmmo.commands.party.quit;"
-                            + "mcmmo.commands.party.rename;mcmmo.commands.party.unlock",
-                    List::of, PartyCommand::new, List.of(), true),
-            // Only the main ptp permission node is needed, not the toggle/accept/acceptall ones
-            new CommandSpec("ptp", () -> LocaleLoader.getString("Commands.Description.ptp"),
-                    "mcmmo.commands.ptp",
-                    () -> List.of(LocaleLoader.getString("Commands.Usage.1", "ptp",
-                                    "<" + LocaleLoader.getString("Commands.Usage.Player") + ">"),
-                            LocaleLoader.getString("Commands.Usage.1", "ptp",
-                                    "<toggle|accept|acceptall>")),
-                    PtpCommand::new, List.of(), true),
+            // mcRPG has no party system, so /party and /ptp are not registered
+
+            // mcRPG: specialization commands
+            spec("chooseskill", "mcrpg.commands.chooseskill",
+                    () -> List.of(LocaleLoader.getString("Commands.Usage.0", "chooseskill"),
+                            LocaleLoader.getString("Commands.Usage.2", "chooseskill",
+                                    "<primary|secondary>",
+                                    "<" + LocaleLoader.getString("Commands.Usage.Skill")
+                                            + ">")),
+                    ChooseSkillCommand::new),
+            spec("abandonskill", "mcrpg.commands.abandonskill",
+                    () -> List.of(LocaleLoader.getString("Commands.Usage.2", "abandonskill",
+                            "<" + LocaleLoader.getString("Commands.Usage.Skill") + ">",
+                            "[confirm]")),
+                    AbandonSkillCommand::new),
+            spec("rpgsetskill", "mcrpg.commands.setskill",
+                    () -> List.of(LocaleLoader.getString("Commands.Usage.3", "rpgsetskill",
+                            "<" + LocaleLoader.getString("Commands.Usage.Player") + ">",
+                            "<primary|secondary>",
+                            "<" + LocaleLoader.getString("Commands.Usage.Skill") + "|none>")),
+                    SetSkillCommand::new),
 
             // Player Commands
-            spec("inspect",
-                    "mcmmo.commands.inspect;mcmmo.commands.inspect.far;"
-                            + "mcmmo.commands.inspect.offline",
-                    () -> List.of(LocaleLoader.getString("Commands.Usage.1", "inspect",
+            spec("rpginspect",
+                    "mcrpg.commands.inspect;mcrpg.commands.inspect.far;"
+                            + "mcrpg.commands.inspect.offline",
+                    () -> List.of(LocaleLoader.getString("Commands.Usage.1", "rpginspect",
                             "<" + LocaleLoader.getString("Commands.Usage.Player") + ">")),
                     InspectCommand::new),
-            spec("mccooldown", "mcmmo.commands.mccooldown", () -> List.of(
-                    LocaleLoader.getString("Commands.Usage.0", "mccooldowns")),
+            spec("rpgcooldowns", "mcrpg.commands.cooldowns", () -> List.of(
+                    LocaleLoader.getString("Commands.Usage.0", "rpgcooldowns")),
                     MccooldownCommand::new),
-            spec("mcrank",
-                    "mcmmo.commands.mcrank;mcmmo.commands.mcrank.others;"
-                            + "mcmmo.commands.mcrank.others.far;"
-                            + "mcmmo.commands.mcrank.others.offline",
-                    () -> List.of(LocaleLoader.getString("Commands.Usage.1", "mcrank",
+            spec("rpgrank",
+                    "mcrpg.commands.rank;mcrpg.commands.rank.others;"
+                            + "mcrpg.commands.rank.others.far;"
+                            + "mcrpg.commands.rank.others.offline",
+                    () -> List.of(LocaleLoader.getString("Commands.Usage.1", "rpgrank",
                             "[" + LocaleLoader.getString("Commands.Usage.Player") + "]")),
                     McRankCommand::new),
-            spec("mcstats", "mcmmo.commands.mcstats", () -> List.of(
-                    LocaleLoader.getString("Commands.Usage.0", "mcstats")),
+            spec("rpgstats", "mcrpg.commands.stats", () -> List.of(
+                    LocaleLoader.getString("Commands.Usage.0", "rpgstats")),
                     McstatsCommand::new),
-            // Only the main mctop permission node is needed, not the per-skill ones
-            spec("mctop", "mcmmo.commands.mctop", () -> List.of(
-                    LocaleLoader.getString("Commands.Usage.2", "mctop",
+            // Only the main rpgtop permission node is needed, not the per-skill ones
+            spec("rpgtop", "mcrpg.commands.top", () -> List.of(
+                    LocaleLoader.getString("Commands.Usage.2", "rpgtop",
                             "[" + LocaleLoader.getString("Commands.Usage.Skill") + "]",
                             "[" + LocaleLoader.getString("Commands.Usage.Page") + "]")),
                     McTopCommand::new),
 
             // Admin commands
-            spec("mcmmoreloadlocale", () -> "Reloads locale", // TODO: Localize
-                    "mcmmo.commands.reloadlocale", () -> List.of(
-                            LocaleLoader.getString("Commands.Usage.0", "mcmmoreloadlocale")),
+            spec("rpgreloadlocale", () -> "Reloads locale", // TODO: Localize
+                    "mcrpg.commands.reloadlocale", () -> List.of(
+                            LocaleLoader.getString("Commands.Usage.0", "rpgreloadlocale")),
                     McmmoReloadLocaleCommand::new)
     );
 
@@ -315,7 +303,7 @@ public final class CommandRegistrationManager {
 
             command.setDescription(LocaleLoader.getString("Commands.Description.Skill",
                     StringUtils.getCapitalized(localizedName)));
-            command.setPermission("mcmmo.commands." + commandName);
+            command.setPermission("mcrpg.commands." + commandName);
             command.setPermissionMessage(permissionMessage);
             command.setUsage(LocaleLoader.getString("Commands.Usage.0", commandName));
             command.setUsage(command.getUsage() + "\n" + LocaleLoader.getString("Commands.Usage.2",

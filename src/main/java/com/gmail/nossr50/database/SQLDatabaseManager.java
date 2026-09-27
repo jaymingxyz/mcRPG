@@ -11,6 +11,7 @@ import com.gmail.nossr50.datatypes.player.UniqueDataType;
 import com.gmail.nossr50.datatypes.skills.PrimarySkillType;
 import com.gmail.nossr50.datatypes.skills.SuperAbilityType;
 import com.gmail.nossr50.mcMMO;
+import com.gmail.nossr50.mcrpg.specialization.SpecializationSlot;
 import com.gmail.nossr50.runnables.database.UUIDUpdateAsyncTask;
 import com.gmail.nossr50.util.LogUtils;
 import com.gmail.nossr50.util.Misc;
@@ -40,7 +41,8 @@ public final class SQLDatabaseManager implements DatabaseManager {
     public static final String MOBHEALTHBAR_VARCHAR = "VARCHAR(50)";
     public static final String UUID_VARCHAR = "VARCHAR(36)";
     public static final String USER_VARCHAR = "VARCHAR(40)";
-    public static final int CHILD_SKILLS_SIZE = 2;
+    // mcRPG has no child skills: Salvage and Smelting are stored like every other skill
+    public static final int CHILD_SKILLS_SIZE = 0;
     public static final String LEGACY_DRIVER_PATH = "com.mysql.jdbc.Driver";
     private static final String ALL_QUERY_VERSION = "total";
     private static final String INVALID_OLD_USERNAME = "_INVALID_OLD_USERNAME_";
@@ -73,7 +75,9 @@ public final class SQLDatabaseManager implements DatabaseManager {
             PrimarySkillType.CROSSBOWS,
             PrimarySkillType.TRIDENTS,
             PrimarySkillType.MACES,
-            PrimarySkillType.SPEARS
+            PrimarySkillType.SPEARS,
+            PrimarySkillType.SALVAGE,
+            PrimarySkillType.SMELTING
     };
 
     // ---------------------------------------------------------------------
@@ -220,7 +224,7 @@ public final class SQLDatabaseManager implements DatabaseManager {
                             + "AND unarmed = 0 AND herbalism = 0 AND excavation = 0 AND "
                             + "archery = 0 AND swords = 0 AND axes = 0 AND acrobatics = 0 "
                             + "AND fishing = 0 AND alchemy = 0 AND crossbows = 0 AND tridents = 0 "
-                            + "AND maces = 0 AND spears = 0;"
+                            + "AND maces = 0 AND spears = 0 AND salvage = 0 AND smelting = 0;"
             );
 
             statement.executeUpdate(
@@ -341,7 +345,8 @@ public final class SQLDatabaseManager implements DatabaseManager {
                         || !updateSkills(connection, userId, profile, playerName)
                         || !updateExperience(connection, userId, profile, playerName)
                         || !updateCooldowns(connection, userId, profile, playerName)
-                        || !updateHudSettings(connection, userId, profile, playerName)) {
+                        || !updateHudSettings(connection, userId, profile, playerName)
+                        || !updateSpecialization(connection, userId, profile, playerName)) {
                     connection.rollback();
                     return false;
                 }
@@ -371,6 +376,52 @@ public final class SQLDatabaseManager implements DatabaseManager {
     // Update helpers
     // ---------------------------------------------------------------------
 
+    /** mcRPG: saves the specialization slots (NULL for an empty slot). */
+    private boolean updateSpecialization(Connection connection, int userId,
+            PlayerProfile profile, String playerName) {
+        final String sql = "UPDATE " + tablePrefix + "users SET primary_skill = ?, "
+                + "secondary_skill = ? WHERE id = ?";
+
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            setSpecializationParameter(stmt, 1,
+                    profile.getSpecialization(SpecializationSlot.PRIMARY));
+            setSpecializationParameter(stmt, 2,
+                    profile.getSpecialization(SpecializationSlot.SECONDARY));
+            stmt.setInt(3, userId);
+            if (stmt.executeUpdate() == 0) {
+                logger.severe("Failed to update specialization for " + playerName);
+                return false;
+            }
+            return true;
+        } catch (SQLException ex) {
+            logSQLException(ex);
+            return false;
+        }
+    }
+
+    private static void setSpecializationParameter(PreparedStatement stmt, int index,
+            @Nullable PrimarySkillType skill) throws SQLException {
+        if (skill == null) {
+            stmt.setNull(index, Types.VARCHAR);
+        } else {
+            stmt.setString(index, skill.name());
+        }
+    }
+
+    /** mcRPG: reads a specialization slot column; NULL or an unknown name is an empty slot. */
+    private static @Nullable PrimarySkillType readSpecialization(ResultSet result,
+            String column) {
+        try {
+            final String value = result.getString(column);
+            if (value == null || value.isBlank()) {
+                return null;
+            }
+            return PrimarySkillType.valueOf(value.trim().toUpperCase(Locale.ROOT));
+        } catch (SQLException | IllegalArgumentException ignored) {
+            return null;
+        }
+    }
+
     private boolean updateLastLogin(Connection connection, int userId, String playerName) {
         String sql =
                 "UPDATE " + tablePrefix + "users SET lastlogin = UNIX_TIMESTAMP() WHERE id = ?";
@@ -394,7 +445,8 @@ public final class SQLDatabaseManager implements DatabaseManager {
                 + " taming = ?, mining = ?, repair = ?, woodcutting = ?"
                 + ", unarmed = ?, herbalism = ?, excavation = ?"
                 + ", archery = ?, swords = ?, axes = ?, acrobatics = ?"
-                + ", fishing = ?, alchemy = ?, crossbows = ?, tridents = ?, maces = ?, spears = ?, total = ?"
+                + ", fishing = ?, alchemy = ?, crossbows = ?, tridents = ?, maces = ?, spears = ?"
+                + ", salvage = ?, smelting = ?, total = ?"
                 + " WHERE user_id = ?";
 
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
@@ -416,6 +468,8 @@ public final class SQLDatabaseManager implements DatabaseManager {
             stmt.setInt(i++, profile.getSkillLevel(PrimarySkillType.TRIDENTS));
             stmt.setInt(i++, profile.getSkillLevel(PrimarySkillType.MACES));
             stmt.setInt(i++, profile.getSkillLevel(PrimarySkillType.SPEARS));
+            stmt.setInt(i++, profile.getSkillLevel(PrimarySkillType.SALVAGE));
+            stmt.setInt(i++, profile.getSkillLevel(PrimarySkillType.SMELTING));
 
             int total = 0;
             for (PrimarySkillType primarySkillType : SkillTools.NON_CHILD_SKILLS) {
@@ -442,6 +496,7 @@ public final class SQLDatabaseManager implements DatabaseManager {
                 + ", unarmed = ?, herbalism = ?, excavation = ?"
                 + ", archery = ?, swords = ?, axes = ?, acrobatics = ?"
                 + ", fishing = ?, alchemy = ?, crossbows = ?, tridents = ?, maces = ?, spears = ?"
+                + ", salvage = ?, smelting = ?"
                 + " WHERE user_id = ?";
 
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
@@ -463,6 +518,8 @@ public final class SQLDatabaseManager implements DatabaseManager {
             stmt.setInt(i++, profile.getSkillXpLevel(PrimarySkillType.TRIDENTS));
             stmt.setInt(i++, profile.getSkillXpLevel(PrimarySkillType.MACES));
             stmt.setInt(i++, profile.getSkillXpLevel(PrimarySkillType.SPEARS));
+            stmt.setInt(i++, profile.getSkillXpLevel(PrimarySkillType.SALVAGE));
+            stmt.setInt(i++, profile.getSkillXpLevel(PrimarySkillType.SMELTING));
             stmt.setInt(i, userId);
 
             if (stmt.executeUpdate() == 0) {
@@ -945,6 +1002,8 @@ public final class SQLDatabaseManager implements DatabaseManager {
                             "s.tridents    AS skill_tridents, " +
                             "s.maces       AS skill_maces, " +
                             "s.spears      AS skill_spears, " +
+                            "s.salvage     AS skill_salvage, " +
+                            "s.smelting    AS skill_smelting, " +
 
                             // --- skills XP ---
                             "e.taming      AS xp_taming, " +
@@ -964,6 +1023,8 @@ public final class SQLDatabaseManager implements DatabaseManager {
                             "e.tridents    AS xp_tridents, " +
                             "e.maces       AS xp_maces, " +
                             "e.spears      AS xp_spears, " +
+                            "e.salvage     AS xp_salvage, " +
+                            "e.smelting    AS xp_smelting, " +
 
                             // --- cooldowns / unique data ---
                             "c.mining        AS cd_super_breaker, " +
@@ -987,6 +1048,8 @@ public final class SQLDatabaseManager implements DatabaseManager {
                             "h.mobhealthbar  AS mobhealthbar, " +
                             "h.scoreboardtips AS scoreboardtips, " +
                             "u.uuid          AS uuid, " +
+                            "u.primary_skill AS primary_skill, " +
+                            "u.secondary_skill AS secondary_skill, " +
                             "u.`user`        AS username " +
                             "FROM " + tablePrefix + "users u " +
                             "JOIN " + tablePrefix + "skills s ON (u.id = s.user_id) " +
@@ -1127,8 +1190,12 @@ public final class SQLDatabaseManager implements DatabaseManager {
             // keep uuid null
         }
 
-        return new PlayerProfile(playerName, uuid, skills, skillsXp, skillsDATS,
-                scoreboardTipsShown, uniqueData, null);
+        final PlayerProfile profile = new PlayerProfile(playerName, uuid, skills, skillsXp,
+                skillsDATS, scoreboardTipsShown, uniqueData, null);
+        // mcRPG: specialization slots
+        profile.loadSpecialization(readSpecialization(result, "primary_skill"),
+                readSpecialization(result, "secondary_skill"));
+        return profile;
     }
 
     // ---------------------------------------------------------------------
@@ -1286,6 +1353,33 @@ public final class SQLDatabaseManager implements DatabaseManager {
         updateStructure(cooldowns, tridents, "10");
         updateStructure(cooldowns, maces, "10");
         updateStructure(cooldowns, spears, "10");
+
+        // mcRPG: Salvage and Smelting have their own level and XP columns (no super abilities,
+        // so no cooldown columns)
+        updateStructure(skills, "salvage", "32");
+        updateStructure(skills, "smelting", "32");
+        updateStructure(experience, "salvage", "10");
+        updateStructure(experience, "smelting", "10");
+
+        // mcRPG: specialization slots on the users table (NULL = empty slot)
+        ensureSpecializationColumn("primary_skill");
+        ensureSpecializationColumn("secondary_skill");
+    }
+
+    /** Adds a nullable specialization slot column to the users table if it's missing. */
+    private void ensureSpecializationColumn(String columnName) {
+        try (Connection connection = getConnection(PoolIdentifier.MISC)) {
+            if (!columnExists(connection, mcMMO.p.getGeneralConfig().getMySQLDatabaseName(),
+                    tablePrefix + "users", columnName)) {
+                try (Statement statement = connection.createStatement()) {
+                    statement.executeUpdate("ALTER TABLE `" + tablePrefix + "users` "
+                            + "ADD COLUMN `" + columnName + "` varchar(32) NULL DEFAULT NULL");
+                }
+            }
+        } catch (SQLException e) {
+            logSQLException(e);
+            throw new RuntimeException(e);
+        }
     }
 
     private void ensureUsersTable(Connection connection,
@@ -1299,6 +1393,8 @@ public final class SQLDatabaseManager implements DatabaseManager {
                 + "`user` varchar(40) NOT NULL,"
                 + "`uuid` varchar(36),"
                 + "`lastlogin` bigint NOT NULL,"
+                + "`primary_skill` varchar(32) NULL DEFAULT NULL,"
+                + "`secondary_skill` varchar(32) NULL DEFAULT NULL,"
                 + "PRIMARY KEY (`id`),"
                 + "INDEX `user_index`(`user`),"
                 + "UNIQUE(`uuid`))";
@@ -1390,6 +1486,8 @@ public final class SQLDatabaseManager implements DatabaseManager {
                 + "`tridents` int(10) unsigned NOT NULL DEFAULT " + startingLevel + ","
                 + "`maces` int(10) unsigned NOT NULL DEFAULT " + startingLevel + ","
                 + "`spears` int(10) unsigned NOT NULL DEFAULT " + startingLevel + ","
+                + "`salvage` int(10) unsigned NOT NULL DEFAULT " + startingLevel + ","
+                + "`smelting` int(10) unsigned NOT NULL DEFAULT " + startingLevel + ","
                 + "`total` int(10) unsigned NOT NULL DEFAULT " + totalLevel + ","
                 + "PRIMARY KEY (`user_id`),"
                 // Leaderboard indexes: readLeaderboard sorts on a single column per scope.
@@ -1412,6 +1510,8 @@ public final class SQLDatabaseManager implements DatabaseManager {
                 + "INDEX `idx_tridents` (`tridents`),"
                 + "INDEX `idx_maces` (`maces`),"
                 + "INDEX `idx_spears` (`spears`),"
+                + "INDEX `idx_salvage` (`salvage`),"
+                + "INDEX `idx_smelting` (`smelting`),"
                 + "INDEX `idx_total` (`total`)) "
                 + "DEFAULT CHARSET=" + CHARSET_SQL + ";";
 
@@ -1445,6 +1545,8 @@ public final class SQLDatabaseManager implements DatabaseManager {
                 + "`tridents` int(10) unsigned NOT NULL DEFAULT '0',"
                 + "`maces` int(10) unsigned NOT NULL DEFAULT '0',"
                 + "`spears` int(10) unsigned NOT NULL DEFAULT '0',"
+                + "`salvage` int(10) unsigned NOT NULL DEFAULT '0',"
+                + "`smelting` int(10) unsigned NOT NULL DEFAULT '0',"
                 + "PRIMARY KEY (`user_id`)) "
                 + "DEFAULT CHARSET=" + CHARSET_SQL + ";";
 

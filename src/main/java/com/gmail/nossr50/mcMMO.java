@@ -87,8 +87,6 @@ import java.util.List;
 import java.util.logging.Level;
 import net.kyori.adventure.platform.bukkit.BukkitAudiences;
 import net.shatteredlands.shatt.backup.ZipLibrary;
-import org.bstats.bukkit.Metrics;
-import org.bstats.charts.SimplePie;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
@@ -366,20 +364,9 @@ public class mcMMO extends JavaPlugin {
                 RankUtils.populateRanks();
             }
 
-            //If anonymous statistics are enabled then use them
-            Metrics metrics;
-
-            if (generalConfig.getIsMetricsEnabled()) {
-                metrics = new Metrics(this, 3894);
-                metrics.addCustomChart(
-                        new SimplePie("version", () -> getDescription().getVersion()));
-
-                if (generalConfig.getIsRetroMode()) {
-                    metrics.addCustomChart(new SimplePie("leveling_system", () -> "Retro"));
-                } else {
-                    metrics.addCustomChart(new SimplePie("leveling_system", () -> "Standard"));
-                }
-            }
+            // mcRPG: no bStats metrics. 3894 was mcMMO's own bStats ID, so mcRPG servers would
+            // have reported to mcMMO's page. Register mcRPG on bStats and add its ID here to
+            // turn metrics back on.
         } catch (Throwable t) {
             getLogger().log(Level.SEVERE, "There was an error while enabling mcMMO!", t);
 
@@ -661,7 +648,7 @@ public class mcMMO extends JavaPlugin {
         mainDirectory = getDataFolder().getPath() + File.separator;
         localesDirectory = mainDirectory + "locales" + File.separator;
         flatFileDirectory = mainDirectory + "flatfile" + File.separator;
-        usersFile = flatFileDirectory + "mcmmo.users";
+        usersFile = flatFileDirectory + "mcrpg.users"; // mcRPG: was mcmmo.users
         modDirectory = mainDirectory + "mods" + File.separator;
         fixFilePaths();
     }
@@ -755,6 +742,13 @@ public class mcMMO extends JavaPlugin {
         pluginManager.registerEvents(new SelfListener(this), this);
         pluginManager.registerEvents(new WorldListener(this), this);
         pluginManager.registerEvents(new ChunkListener(), this);
+        // mcRPG: Specialization menu and specialization login reminder
+        pluginManager.registerEvents(new com.gmail.nossr50.mcrpg.gui.MenuListener(), this);
+        pluginManager.registerEvents(
+                new com.gmail.nossr50.mcrpg.specialization.LoginReminder(), this);
+        // mcRPG: item wear and found enchantments for Salvage XP
+        pluginManager.registerEvents(
+                new com.gmail.nossr50.mcrpg.salvage.SalvageTrackingListener(), this);
         //        pluginManager.registerEvents(new CommandListener(this), this);
     }
 

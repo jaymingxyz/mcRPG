@@ -21,7 +21,7 @@ import org.jetbrains.annotations.NotNull;
 
 public class AdminChatMailer extends AbstractChatMailer {
 
-    public static final @NotNull String MCMMO_CHAT_ADMINCHAT_PERMISSION = "mcmmo.chat.adminchat";
+    public static final @NotNull String MCMMO_CHAT_ADMINCHAT_PERMISSION = "mcrpg.chat.adminchat";
 
     public AdminChatMailer(Plugin pluginRef) {
         super(pluginRef);

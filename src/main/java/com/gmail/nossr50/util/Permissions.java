@@ -27,41 +27,41 @@ import org.jetbrains.annotations.Nullable;
 
 public final class Permissions {
     private static final Map<PrimarySkillType, String> SKILL_ENABLED_NODES =
-            perSkillNodes("mcmmo.skills.");
+            perSkillNodes("mcrpg.skills.");
     private static final Map<PrimarySkillType, String> LUCKY_PERK_NODES =
-            perSkillNodes("mcmmo.perks.lucky.");
+            perSkillNodes("mcrpg.perks.lucky.");
     private static final Map<PrimarySkillType, String> XP_QUADRUPLE_NODES =
-            perSkillNodes("mcmmo.perks.xp.quadruple.");
+            perSkillNodes("mcrpg.perks.xp.quadruple.");
     private static final Map<PrimarySkillType, String> XP_TRIPLE_NODES =
-            perSkillNodes("mcmmo.perks.xp.triple.");
+            perSkillNodes("mcrpg.perks.xp.triple.");
     private static final Map<PrimarySkillType, String> XP_150_PERCENT_NODES =
-            perSkillNodes("mcmmo.perks.xp.150percentboost.");
+            perSkillNodes("mcrpg.perks.xp.150percentboost.");
     private static final Map<PrimarySkillType, String> XP_DOUBLE_NODES =
-            perSkillNodes("mcmmo.perks.xp.double.");
+            perSkillNodes("mcrpg.perks.xp.double.");
     private static final Map<PrimarySkillType, String> XP_50_PERCENT_NODES =
-            perSkillNodes("mcmmo.perks.xp.50percentboost.");
+            perSkillNodes("mcrpg.perks.xp.50percentboost.");
     private static final Map<PrimarySkillType, String> XP_25_PERCENT_NODES =
-            perSkillNodes("mcmmo.perks.xp.25percentboost.");
+            perSkillNodes("mcrpg.perks.xp.25percentboost.");
     private static final Map<PrimarySkillType, String> XP_10_PERCENT_NODES =
-            perSkillNodes("mcmmo.perks.xp.10percentboost.");
+            perSkillNodes("mcrpg.perks.xp.10percentboost.");
     private static final Map<PrimarySkillType, String> XP_CUSTOM_BOOST_NODES =
-            perSkillNodes("mcmmo.perks.xp.customboost.");
+            perSkillNodes("mcrpg.perks.xp.customboost.");
     private static final Map<PrimarySkillType, String> VANILLA_XP_BOOST_NODES =
-            perSkillNodes("mcmmo.ability.", ".vanillaxpboost");
+            perSkillNodes("mcrpg.ability.", ".vanillaxpboost");
     private static final Map<ItemType, String> REPAIR_ITEM_TYPE_NODES = perEnumNodes(
-            ItemType.class, type -> "mcmmo.ability.repair."
+            ItemType.class, type -> "mcrpg.ability.repair."
                     + type.toString().toLowerCase(Locale.ENGLISH) + "repair");
     private static final Map<MaterialType, String> REPAIR_MATERIAL_TYPE_NODES = perEnumNodes(
-            MaterialType.class, type -> "mcmmo.ability.repair."
+            MaterialType.class, type -> "mcrpg.ability.repair."
                     + type.toString().toLowerCase(Locale.ENGLISH) + "repair");
     private static final Map<ItemType, String> SALVAGE_ITEM_TYPE_NODES = perEnumNodes(
-            ItemType.class, type -> "mcmmo.ability.salvage."
+            ItemType.class, type -> "mcrpg.ability.salvage."
                     + type.toString().toLowerCase(Locale.ENGLISH) + "salvage");
     private static final Map<MaterialType, String> SALVAGE_MATERIAL_TYPE_NODES = perEnumNodes(
-            MaterialType.class, type -> "mcmmo.ability.salvage."
+            MaterialType.class, type -> "mcrpg.ability.salvage."
                     + type.toString().toLowerCase(Locale.ENGLISH) + "salvage");
     private static final Map<EntityType, String> CALL_OF_THE_WILD_NODES = perEnumNodes(
-            EntityType.class, type -> "mcmmo.ability.taming.callofthewild."
+            EntityType.class, type -> "mcrpg.ability.taming.callofthewild."
                     + type.toString().toLowerCase(Locale.ENGLISH));
     // Material is too large to precompute every node eagerly; these fill lazily and are read
     // from region threads on Folia
@@ -102,45 +102,45 @@ public final class Permissions {
      * GENERAL
      */
     public static boolean motd(Permissible permissible) {
-        return permissible.hasPermission("mcmmo.motd");
+        return permissible.hasPermission("mcrpg.motd");
     }
 
     public static boolean levelUpBroadcast(Permissible permissible) {
-        return permissible.hasPermission("mcmmo.broadcast.levelup");
+        return permissible.hasPermission("mcrpg.broadcast.levelup");
     }
 
     public static boolean updateNotifications(Permissible permissible) {
-        return permissible.hasPermission("mcmmo.tools.updatecheck");
+        return permissible.hasPermission("mcrpg.tools.updatecheck");
     }
 
     public static boolean chimaeraWing(Permissible permissible) {
-        return permissible.hasPermission("mcmmo.item.chimaerawing");
+        return permissible.hasPermission("mcrpg.item.chimaerawing");
     }
 
     public static boolean showversion(Permissible permissible) {
-        return permissible.hasPermission("mcmmo.showversion");
+        return permissible.hasPermission("mcrpg.showversion");
     }
 
     /* BYPASS */
     public static boolean hardcoreBypass(Permissible permissible) {
-        return permissible.hasPermission("mcmmo.bypass.hardcoremode");
+        return permissible.hasPermission("mcrpg.bypass.hardcoremode");
     }
 
     public static boolean arcaneBypass(Permissible permissible) {
-        return permissible.hasPermission("mcmmo.bypass.arcanebypass");
+        return permissible.hasPermission("mcrpg.bypass.arcanebypass");
     }
 
     /* CHAT */
     public static boolean partyChat(Permissible permissible) {
-        return permissible.hasPermission("mcmmo.chat.partychat");
+        return permissible.hasPermission("mcrpg.chat.partychat");
     }
 
     public static boolean adminChat(Permissible permissible) {
-        return permissible.hasPermission("mcmmo.chat.adminchat");
+        return permissible.hasPermission("mcrpg.chat.adminchat");
     }
 
     public static boolean colorChat(Permissible permissible) {
-        return permissible.hasPermission("mcmmo.chat.colors");
+        return permissible.hasPermission("mcrpg.chat.colors");
     }
 
     /*
@@ -148,163 +148,163 @@ public final class Permissions {
      */
 
     public static boolean mmoinfo(Permissible permissible) {
-        return permissible.hasPermission("mcmmo.commands.mmoinfo");
+        return permissible.hasPermission("mcrpg.commands.info");
     }
 
     public static boolean addlevels(Permissible permissible) {
-        return permissible.hasPermission("mcmmo.commands.addlevels");
+        return permissible.hasPermission("mcrpg.commands.addlevels");
     }
 
     public static boolean addlevelsOthers(Permissible permissible) {
-        return permissible.hasPermission("mcmmo.commands.addlevels.others");
+        return permissible.hasPermission("mcrpg.commands.addlevels.others");
     }
 
     public static boolean addxp(Permissible permissible) {
-        return permissible.hasPermission("mcmmo.commands.addxp");
+        return permissible.hasPermission("mcrpg.commands.addxp");
     }
 
     public static boolean addxpOthers(Permissible permissible) {
-        return permissible.hasPermission("mcmmo.commands.addxp.others");
+        return permissible.hasPermission("mcrpg.commands.addxp.others");
     }
 
     public static boolean hardcoreModify(Permissible permissible) {
-        return permissible.hasPermission("mcmmo.commands.hardcore.modify");
+        return permissible.hasPermission("mcrpg.commands.hardcore.modify");
     }
 
     public static boolean hardcoreToggle(Permissible permissible) {
-        return permissible.hasPermission("mcmmo.commands.hardcore.toggle");
+        return permissible.hasPermission("mcrpg.commands.hardcore.toggle");
     }
 
     public static boolean inspect(Permissible permissible) {
-        return (permissible.hasPermission("mcmmo.commands.inspect"));
+        return (permissible.hasPermission("mcrpg.commands.inspect"));
     }
 
     public static boolean inspectFar(Permissible permissible) {
-        return (permissible.hasPermission("mcmmo.commands.inspect.far"));
+        return (permissible.hasPermission("mcrpg.commands.inspect.far"));
     }
 
     public static boolean inspectHidden(Permissible permissible) {
-        return (permissible.hasPermission("mcmmo.commands.inspect.hidden"));
+        return (permissible.hasPermission("mcrpg.commands.inspect.hidden"));
     }
 
     public static boolean mcability(Permissible permissible) {
-        return (permissible.hasPermission("mcmmo.commands.mcability"));
+        return (permissible.hasPermission("mcrpg.commands.ability"));
     }
 
     public static boolean mcabilityOthers(Permissible permissible) {
-        return (permissible.hasPermission("mcmmo.commands.mcability.others"));
+        return (permissible.hasPermission("mcrpg.commands.ability.others"));
     }
 
     public static boolean adminChatSpy(Permissible permissible) {
-        return permissible.hasPermission("mcmmo.commands.mcchatspy");
+        return permissible.hasPermission("mcrpg.commands.mcchatspy");
     }
 
     public static boolean adminChatSpyOthers(Permissible permissible) {
-        return permissible.hasPermission("mcmmo.commands.mcchatspy.others");
+        return permissible.hasPermission("mcrpg.commands.mcchatspy.others");
     }
 
     public static boolean mcgod(Permissible permissible) {
-        return permissible.hasPermission("mcmmo.commands.mcgod");
+        return permissible.hasPermission("mcrpg.commands.god");
     }
 
     public static boolean mcgodOthers(Permissible permissible) {
-        return permissible.hasPermission("mcmmo.commands.mcgod.others");
+        return permissible.hasPermission("mcrpg.commands.god.others");
     }
 
     public static boolean mcmmoDescription(Permissible permissible) {
-        return permissible.hasPermission("mcmmo.commands.mcmmo.description");
+        return permissible.hasPermission("mcrpg.commands.mcrpg.description");
     }
 
     public static boolean mcmmoHelp(Permissible permissible) {
-        return permissible.hasPermission("mcmmo.commands.mcmmo.help");
+        return permissible.hasPermission("mcrpg.commands.mcrpg.help");
     }
 
     public static boolean mcrank(Permissible permissible) {
-        return (permissible.hasPermission("mcmmo.commands.mcrank"));
+        return (permissible.hasPermission("mcrpg.commands.rank"));
     }
 
     public static boolean mcrankOthers(Permissible permissible) {
-        return (permissible.hasPermission("mcmmo.commands.mcrank.others"));
+        return (permissible.hasPermission("mcrpg.commands.rank.others"));
     }
 
     public static boolean mcrankFar(Permissible permissible) {
-        return (permissible.hasPermission("mcmmo.commands.mcrank.others.far"));
+        return (permissible.hasPermission("mcrpg.commands.rank.others.far"));
     }
 
     public static boolean mcrankOffline(Permissible permissible) {
-        return (permissible.hasPermission("mcmmo.commands.mcrank.others.offline"));
+        return (permissible.hasPermission("mcrpg.commands.rank.others.offline"));
     }
 
     public static boolean mcrefresh(Permissible permissible) {
-        return (permissible.hasPermission("mcmmo.commands.mcrefresh"));
+        return (permissible.hasPermission("mcrpg.commands.refresh"));
     }
 
     public static boolean mcrefreshOthers(Permissible permissible) {
-        return (permissible.hasPermission("mcmmo.commands.mcrefresh.others"));
+        return (permissible.hasPermission("mcrpg.commands.refresh.others"));
     }
 
     public static boolean mctop(Permissible permissible, PrimarySkillType skill) {
         return permissible.hasPermission(
-                "mcmmo.commands.mctop." + skill.toString().toLowerCase(Locale.ENGLISH));
+                "mcrpg.commands.top." + skill.toString().toLowerCase(Locale.ENGLISH));
     }
 
     public static boolean mmoedit(Permissible permissible) {
-        return permissible.hasPermission("mcmmo.commands.mmoedit");
+        return permissible.hasPermission("mcrpg.commands.setlevel");
     }
 
     public static boolean mmoeditOthers(Permissible permissible) {
-        return permissible.hasPermission("mcmmo.commands.mmoedit.others");
+        return permissible.hasPermission("mcrpg.commands.setlevel.others");
     }
 
     public static boolean skillreset(Permissible permissible) {
-        return permissible.hasPermission("mcmmo.commands.skillreset");
+        return permissible.hasPermission("mcrpg.commands.skillreset");
     }
 
     public static boolean skillreset(Permissible permissible, PrimarySkillType skill) {
         return permissible.hasPermission(
-                "mcmmo.commands.skillreset." + skill.toString().toLowerCase(Locale.ENGLISH));
+                "mcrpg.commands.skillreset." + skill.toString().toLowerCase(Locale.ENGLISH));
     }
 
     public static boolean skillresetOthers(Permissible permissible) {
-        return permissible.hasPermission("mcmmo.commands.skillreset.others");
+        return permissible.hasPermission("mcrpg.commands.skillreset.others");
     }
 
     public static boolean skillresetOthers(Permissible permissible, PrimarySkillType skill) {
         return permissible.hasPermission(
-                "mcmmo.commands.skillreset.others." + skill.toString().toLowerCase(Locale.ENGLISH));
+                "mcrpg.commands.skillreset.others." + skill.toString().toLowerCase(Locale.ENGLISH));
     }
 
     public static boolean xplock(Permissible permissible, PrimarySkillType skill) {
         return permissible.hasPermission(
-                "mcmmo.commands.xplock." + skill.toString().toLowerCase(Locale.ENGLISH));
+                "mcrpg.commands.xplock." + skill.toString().toLowerCase(Locale.ENGLISH));
     }
 
     public static boolean xprateSet(Permissible permissible) {
-        return permissible.hasPermission("mcmmo.commands.xprate.set");
+        return permissible.hasPermission("mcrpg.commands.xprate.set");
     }
 
     public static boolean xprateReset(Permissible permissible) {
-        return permissible.hasPermission("mcmmo.commands.xprate.reset");
+        return permissible.hasPermission("mcrpg.commands.xprate.reset");
     }
 
     public static boolean xprateShow(Permissible permissible) {
-        return permissible.hasPermission("mcmmo.commands.xprate.show");
+        return permissible.hasPermission("mcrpg.commands.xprate.show");
     }
 
     public static boolean mcpurge(Permissible permissible) {
-        return permissible.hasPermission("mcmmo.commands.mcpurge");
+        return permissible.hasPermission("mcrpg.commands.purge");
     }
 
     public static boolean mcremove(Permissible permissible) {
-        return permissible.hasPermission("mcmmo.commands.mcremove");
+        return permissible.hasPermission("mcrpg.commands.remove");
     }
 
     public static boolean mmoupdate(Permissible permissible) {
-        return permissible.hasPermission("mcmmo.commands.mmoupdate");
+        return permissible.hasPermission("mcrpg.commands.mmoupdate");
     }
 
     public static boolean reloadlocale(Permissible permissible) {
-        return permissible.hasPermission("mcmmo.commands.reloadlocale");
+        return permissible.hasPermission("mcrpg.commands.reloadlocale");
     }
 
     /*
@@ -314,11 +314,11 @@ public final class Permissions {
     /* BYPASS PERKS */
 
     public static boolean hasRepairEnchantBypassPerk(Permissible permissible) {
-        return permissible.hasPermission("mcmmo.perks.bypass.repairenchant");
+        return permissible.hasPermission("mcrpg.perks.bypass.repairenchant");
     }
 
     public static boolean hasSalvageEnchantBypassPerk(Permissible permissible) {
-        return permissible.hasPermission("mcmmo.perks.bypass.salvageenchant");
+        return permissible.hasPermission("mcrpg.perks.bypass.salvageenchant");
     }
 
     public static boolean lucky(Permissible permissible, PrimarySkillType skill) {
@@ -327,70 +327,70 @@ public final class Permissions {
 
     /* XP PERKS */
     public static boolean quadrupleXp(Permissible permissible, PrimarySkillType skill) {
-        return permissible.hasPermission("mcmmo.perks.xp.quadruple.all")
+        return permissible.hasPermission("mcrpg.perks.xp.quadruple.all")
                 || permissible.hasPermission(XP_QUADRUPLE_NODES.get(skill));
     }
 
     public static boolean tripleXp(Permissible permissible, PrimarySkillType skill) {
-        return permissible.hasPermission("mcmmo.perks.xp.triple.all")
+        return permissible.hasPermission("mcrpg.perks.xp.triple.all")
                 || permissible.hasPermission(XP_TRIPLE_NODES.get(skill));
     }
 
     public static boolean doubleAndOneHalfXp(Permissible permissible, PrimarySkillType skill) {
-        return permissible.hasPermission("mcmmo.perks.xp.150percentboost.all")
+        return permissible.hasPermission("mcrpg.perks.xp.150percentboost.all")
                 || permissible.hasPermission(XP_150_PERCENT_NODES.get(skill));
     }
 
     public static boolean doubleXp(Permissible permissible, PrimarySkillType skill) {
-        return permissible.hasPermission("mcmmo.perks.xp.double.all")
+        return permissible.hasPermission("mcrpg.perks.xp.double.all")
                 || permissible.hasPermission(XP_DOUBLE_NODES.get(skill));
     }
 
     public static boolean oneAndOneHalfXp(Permissible permissible, PrimarySkillType skill) {
-        return permissible.hasPermission("mcmmo.perks.xp.50percentboost.all")
+        return permissible.hasPermission("mcrpg.perks.xp.50percentboost.all")
                 || permissible.hasPermission(XP_50_PERCENT_NODES.get(skill));
     }
 
     public static boolean oneAndAQuarterXp(Permissible permissible, PrimarySkillType skill) {
-        return permissible.hasPermission("mcmmo.perks.xp.25percentboost.all")
+        return permissible.hasPermission("mcrpg.perks.xp.25percentboost.all")
                 || permissible.hasPermission(XP_25_PERCENT_NODES.get(skill));
     }
 
     public static boolean oneAndOneTenthXp(Permissible permissible, PrimarySkillType skill) {
-        return permissible.hasPermission("mcmmo.perks.xp.10percentboost.all")
+        return permissible.hasPermission("mcrpg.perks.xp.10percentboost.all")
                 || permissible.hasPermission(XP_10_PERCENT_NODES.get(skill));
     }
 
     public static boolean customXpBoost(Permissible permissible, PrimarySkillType skill) {
-        return permissible.hasPermission("mcmmo.perks.xp.customboost.all")
+        return permissible.hasPermission("mcrpg.perks.xp.customboost.all")
                 || permissible.hasPermission(XP_CUSTOM_BOOST_NODES.get(skill));
     }
 
 
     /* ACTIVATION PERKS */
     public static boolean twelveSecondActivationBoost(Permissible permissible) {
-        return permissible.hasPermission("mcmmo.perks.activationtime.twelveseconds");
+        return permissible.hasPermission("mcrpg.perks.activationtime.twelveseconds");
     }
 
     public static boolean eightSecondActivationBoost(Permissible permissible) {
-        return permissible.hasPermission("mcmmo.perks.activationtime.eightseconds");
+        return permissible.hasPermission("mcrpg.perks.activationtime.eightseconds");
     }
 
     public static boolean fourSecondActivationBoost(Permissible permissible) {
-        return permissible.hasPermission("mcmmo.perks.activationtime.fourseconds");
+        return permissible.hasPermission("mcrpg.perks.activationtime.fourseconds");
     }
 
     /* COOLDOWN PERKS */
     public static boolean halvedCooldowns(Permissible permissible) {
-        return permissible.hasPermission("mcmmo.perks.cooldowns.halved");
+        return permissible.hasPermission("mcrpg.perks.cooldowns.halved");
     }
 
     public static boolean thirdedCooldowns(Permissible permissible) {
-        return permissible.hasPermission("mcmmo.perks.cooldowns.thirded");
+        return permissible.hasPermission("mcrpg.perks.cooldowns.thirded");
     }
 
     public static boolean quarteredCooldowns(Permissible permissible) {
-        return permissible.hasPermission("mcmmo.perks.cooldowns.quartered");
+        return permissible.hasPermission("mcrpg.perks.cooldowns.quartered");
     }
 
     /*
@@ -424,77 +424,77 @@ public final class Permissions {
 
     /* ACROBATICS */
     public static boolean dodge(Permissible permissible) {
-        return permissible.hasPermission("mcmmo.ability.acrobatics.dodge");
+        return permissible.hasPermission("mcrpg.ability.acrobatics.dodge");
     }
 
     public static boolean gracefulRoll(Permissible permissible) {
-        return permissible.hasPermission("mcmmo.ability.acrobatics.gracefulroll");
+        return permissible.hasPermission("mcrpg.ability.acrobatics.gracefulroll");
     }
 
     public static boolean roll(Permissible permissible) {
-        return permissible.hasPermission("mcmmo.ability.acrobatics.roll");
+        return permissible.hasPermission("mcrpg.ability.acrobatics.roll");
     }
 
     /* ALCHEMY */
     public static boolean catalysis(Permissible permissible) {
-        return permissible.hasPermission("mcmmo.ability.alchemy.catalysis");
+        return permissible.hasPermission("mcrpg.ability.alchemy.catalysis");
     }
 
     public static boolean concoctions(Permissible permissible) {
-        return permissible.hasPermission("mcmmo.ability.alchemy.concoctions");
+        return permissible.hasPermission("mcrpg.ability.alchemy.concoctions");
     }
 
     /* ARCHERY */
     public static boolean arrowRetrieval(Permissible permissible) {
-        return permissible.hasPermission("mcmmo.ability.archery.trackarrows");
+        return permissible.hasPermission("mcrpg.ability.archery.trackarrows");
     }
 
     public static boolean daze(Permissible permissible) {
-        return permissible.hasPermission("mcmmo.ability.archery.daze");
+        return permissible.hasPermission("mcrpg.ability.archery.daze");
     }
 
     /* AXES */
     public static boolean skullSplitter(Permissible permissible) {
-        return permissible.hasPermission("mcmmo.ability.axes.skullsplitter");
+        return permissible.hasPermission("mcrpg.ability.axes.skullsplitter");
     }
 
     /* EXCAVATION */
     public static boolean gigaDrillBreaker(Permissible permissible) {
-        return permissible.hasPermission("mcmmo.ability.excavation.gigadrillbreaker");
+        return permissible.hasPermission("mcrpg.ability.excavation.gigadrillbreaker");
     }
 
     /* HERBALISM */
     public static boolean greenTerra(Permissible permissible) {
-        return permissible.hasPermission("mcmmo.ability.herbalism.greenterra");
+        return permissible.hasPermission("mcrpg.ability.herbalism.greenterra");
     }
 
     public static boolean greenThumbBlock(Permissible permissible, Material material) {
         return permissible.hasPermission(GREEN_THUMB_BLOCK_NODES.computeIfAbsent(material,
-                mat -> "mcmmo.ability.herbalism.greenthumb.blocks."
+                mat -> "mcrpg.ability.herbalism.greenthumb.blocks."
                         + mat.toString().replace("_", "").toLowerCase(Locale.ENGLISH)));
     }
 
     public static boolean greenThumbPlant(Permissible permissible, Material material) {
         return permissible.hasPermission(GREEN_THUMB_PLANT_NODES.computeIfAbsent(material,
-                mat -> "mcmmo.ability.herbalism.greenthumb.plants."
+                mat -> "mcrpg.ability.herbalism.greenthumb.plants."
                         + mat.toString().replace("_", "").toLowerCase(Locale.ENGLISH)));
     }
 
     /* MINING */
     public static boolean biggerBombs(Permissible permissible) {
-        return permissible.hasPermission("mcmmo.ability.mining.blastmining.biggerbombs");
+        return permissible.hasPermission("mcrpg.ability.mining.blastmining.biggerbombs");
     }
 
     public static boolean demolitionsExpertise(Permissible permissible) {
-        return permissible.hasPermission("mcmmo.ability.mining.blastmining.demolitionsexpertise");
+        return permissible.hasPermission("mcrpg.ability.mining.blastmining.demolitionsexpertise");
     }
 
     public static boolean remoteDetonation(Permissible permissible) {
-        return permissible.hasPermission("mcmmo.ability.mining.blastmining.detonate");
+        return permissible.hasPermission("mcrpg.ability.mining.blastmining.detonate");
     }
 
     public static boolean superBreaker(Permissible permissible) {
-        return permissible.hasPermission("mcmmo.ability.mining.superbreaker");
+        return permissible.hasPermission("mcrpg.ability.mining.superbreaker");
     }
 
     /* REPAIR */
@@ -509,7 +509,7 @@ public final class Permissions {
 
     /* SALVAGE */
     public static boolean arcaneSalvage(Permissible permissible) {
-        return permissible.hasPermission("mcmmo.ability.salvage.arcanesalvage");
+        return permissible.hasPermission("mcrpg.ability.salvage.arcanesalvage");
     }
 
     public static boolean salvageItemType(Permissible permissible, ItemType salvageItemType) {
@@ -523,16 +523,16 @@ public final class Permissions {
 
     /* SMELTING */
     public static boolean fluxMining(Permissible permissible) {
-        return permissible.hasPermission("mcmmo.ability.smelting.fluxmining");
+        return permissible.hasPermission("mcrpg.ability.smelting.fluxmining");
     }
 
     public static boolean fuelEfficiency(Permissible permissible) {
-        return permissible.hasPermission("mcmmo.ability.smelting.fuelefficiency");
+        return permissible.hasPermission("mcrpg.ability.smelting.fuelefficiency");
     }
 
     /* SWORDS */
     public static boolean serratedStrikes(Permissible permissible) {
-        return permissible.hasPermission("mcmmo.ability.swords.serratedstrikes");
+        return permissible.hasPermission("mcrpg.ability.swords.serratedstrikes");
     }
 
     /* TAMING */
@@ -542,76 +542,76 @@ public final class Permissions {
 
     /* UNARMED */
     public static boolean berserk(Permissible permissible) {
-        return permissible.hasPermission("mcmmo.ability.unarmed.berserk");
+        return permissible.hasPermission("mcrpg.ability.unarmed.berserk");
     }
 
     /* WOODCUTTING */
     public static boolean treeFeller(Permissible permissible) {
-        return permissible.hasPermission("mcmmo.ability.woodcutting.treefeller");
+        return permissible.hasPermission("mcrpg.ability.woodcutting.treefeller");
     }
 
     /* CROSSBOWS */
     public static boolean trickShot(Permissible permissible) {
-        return permissible.hasPermission("mcmmo.ability.crossbows.trickshot");
+        return permissible.hasPermission("mcrpg.ability.crossbows.trickshot");
     }
 
     public static boolean poweredShot(Permissible permissible) {
-        return permissible.hasPermission("mcmmo.ability.crossbows.poweredshot");
+        return permissible.hasPermission("mcrpg.ability.crossbows.poweredshot");
     }
 
     /* TRIDENTS */
     public static boolean tridentsLimitBreak(Permissible permissible) {
-        return permissible.hasPermission("mcmmo.ability.tridents.tridentslimitbreak");
+        return permissible.hasPermission("mcrpg.ability.tridents.tridentslimitbreak");
     }
 
     /* MACES */
     public static boolean macesLimitBreak(Permissible permissible) {
-        return permissible.hasPermission("mcmmo.ability.maces.maceslimitbreak");
+        return permissible.hasPermission("mcrpg.ability.maces.maceslimitbreak");
     }
 
     /*
      * PARTY
      */
     public static boolean partySizeBypass(Permissible permissible) {
-        return permissible.hasPermission("mcmmo.bypass.partylimit");
+        return permissible.hasPermission("mcrpg.bypass.partylimit");
     }
 
     public static boolean party(Permissible permissible) {
-        return permissible.hasPermission("mcmmo.commands.party");
+        return permissible.hasPermission("mcrpg.commands.party");
     }
 
     public static boolean partySubcommand(Permissible permissible, PartySubcommandType subcommand) {
         return permissible.hasPermission(
-                "mcmmo.commands.party." + subcommand.toString().toLowerCase(Locale.ENGLISH));
+                "mcrpg.commands.party." + subcommand.toString().toLowerCase(Locale.ENGLISH));
     }
 
     public static boolean friendlyFire(Permissible permissible) {
-        return permissible.hasPermission("mcmmo.party.friendlyfire");
+        return permissible.hasPermission("mcrpg.party.friendlyfire");
     }
 
     /* TELEPORT */
     public static boolean partyTeleportSend(Permissible permissible) {
-        return permissible.hasPermission("mcmmo.commands.ptp.send");
+        return permissible.hasPermission("mcrpg.commands.ptp.send");
     }
 
     public static boolean partyTeleportAccept(Permissible permissible) {
-        return permissible.hasPermission("mcmmo.commands.ptp.accept");
+        return permissible.hasPermission("mcrpg.commands.ptp.accept");
     }
 
     public static boolean partyTeleportAcceptAll(Permissible permissible) {
-        return permissible.hasPermission("mcmmo.commands.ptp.acceptall");
+        return permissible.hasPermission("mcrpg.commands.ptp.acceptall");
     }
 
     public static boolean partyTeleportToggle(Permissible permissible) {
-        return permissible.hasPermission("mcmmo.commands.ptp.toggle");
+        return permissible.hasPermission("mcrpg.commands.ptp.toggle");
     }
 
     public static boolean partyTeleportAllWorlds(Permissible permissible) {
-        return permissible.hasPermission("mcmmo.commands.ptp.world.all");
+        return permissible.hasPermission("mcrpg.commands.ptp.world.all");
     }
 
     public static boolean partyTeleportWorld(Permissible permissible, World world) {
-        return permissible.hasPermission("mcmmo.commands.ptp.world." + world.getName());
+        return permissible.hasPermission("mcrpg.commands.ptp.world." + world.getName());
     }
 
     public static void generateWorldTeleportPermissions() {
@@ -619,7 +619,7 @@ public final class Permissions {
         PluginManager pluginManager = server.getPluginManager();
 
         for (World world : server.getWorlds()) {
-            addDynamicPermission("mcmmo.commands.ptp.world." + world.getName(),
+            addDynamicPermission("mcrpg.commands.ptp.world." + world.getName(),
                     PermissionDefault.OP, pluginManager);
         }
     }

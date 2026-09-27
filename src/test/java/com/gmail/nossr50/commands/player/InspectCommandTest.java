@@ -54,7 +54,7 @@ class InspectCommandTest extends MMOTestEnvironment {
 
     @Test
     void inspectShouldDenyOfflineTargetWhenSenderLacksInspectFarPermission() {
-        // Given - the target is offline and the sender lacks mcmmo.commands.inspect.far
+        // Given - the target is offline and the sender lacks mcrpg.commands.inspect.far
         when(UserManager.getOfflinePlayer(OFFLINE_TARGET_NAME)).thenReturn(null);
         when(Permissions.inspectFar(player)).thenReturn(false);
 
@@ -72,7 +72,7 @@ class InspectCommandTest extends MMOTestEnvironment {
 
     @Test
     void inspectShouldShowOfflineStatsWhenSenderHasInspectFarPermission() {
-        // Given - the target is offline and the sender has mcmmo.commands.inspect.far
+        // Given - the target is offline and the sender has mcrpg.commands.inspect.far
         when(UserManager.getOfflinePlayer(OFFLINE_TARGET_NAME)).thenReturn(null);
         when(Permissions.inspectFar(player)).thenReturn(true);
         when(databaseManager.loadPlayerProfile(OFFLINE_TARGET_NAME))
@@ -91,7 +91,7 @@ class InspectCommandTest extends MMOTestEnvironment {
     @Test
     void inspectShouldDenyVanishedTargetWhenSenderLacksFarAndHiddenPermissions() {
         // Given - the target is online but vanished from a sender who lacks both
-        // mcmmo.commands.inspect.hidden and mcmmo.commands.inspect.far
+        // mcrpg.commands.inspect.hidden and mcrpg.commands.inspect.far
         final Player sender = mock(Player.class);
         when(UserManager.getOfflinePlayer("testPlayer")).thenReturn(mmoPlayer);
         when(sender.canSee(player)).thenReturn(false);

@@ -2,12 +2,16 @@ package com.gmail.nossr50.skills.salvage;
 
 import com.gmail.nossr50.api.ItemSpawnReason;
 import com.gmail.nossr50.config.experience.ExperienceConfig;
+import com.gmail.nossr50.datatypes.experience.XPGainReason;
+import com.gmail.nossr50.datatypes.experience.XPGainSource;
 import com.gmail.nossr50.datatypes.interactions.NotificationType;
 import com.gmail.nossr50.datatypes.player.McMMOPlayer;
 import com.gmail.nossr50.datatypes.skills.PrimarySkillType;
 import com.gmail.nossr50.datatypes.skills.SubSkillType;
 import com.gmail.nossr50.locale.LocaleLoader;
 import com.gmail.nossr50.mcMMO;
+import com.gmail.nossr50.mcrpg.salvage.SalvageMastery;
+import com.gmail.nossr50.mcrpg.salvage.SalvageXp;
 import com.gmail.nossr50.skills.SkillManager;
 import com.gmail.nossr50.skills.salvage.salvageables.Salvageable;
 import com.gmail.nossr50.util.EventUtils;
@@ -115,11 +119,19 @@ public class SalvageManager extends SkillManager {
         int potentialSalvageYield = Salvage.calculateSalvageableAmount(durability,
                 salvageable.getMaximumDurability(), salvageable.getMaximumQuantity());
 
+        // mcRPG: Salvage Mastery gives back part of the materials lost to damage, by level
+        final double masteryBonus = SalvageMastery.bonusMaterials(getSkillLevel(),
+                potentialSalvageYield, salvageable.getMaximumQuantity());
+        potentialSalvageYield += (int) masteryBonus;
+
         if (potentialSalvageYield <= 0) {
             NotificationManager.sendPlayerInformation(player,
                     NotificationType.SUBSKILL_MESSAGE_FAILED, "Salvage.Skills.TooDamaged");
             return;
         }
+
+        // mcRPG: rolled after the TooDamaged check so a refused item can't be re-rolled
+        potentialSalvageYield += SalvageMastery.rollFraction(mmoPlayer, masteryBonus);
 
         potentialSalvageYield = Math.min(potentialSalvageYield, getSalvageLimit(
                 getPlayer())); // Always get at least something back, if you're capable of salvaging it.
@@ -140,6 +152,12 @@ public class SalvageManager extends SkillManager {
         if (EventUtils.callSalvageCheckEvent(player, item, salvageResults, enchantBook)
                 .isCancelled()) {
             return;
+        }
+
+        // mcRPG: Salvage earns XP from player wear and found enchantments (mcMMO gives none)
+        final float salvageXp = SalvageXp.forItem(item, salvageable);
+        if (salvageXp > 0) {
+            applyXpGain(salvageXp, XPGainReason.PVE, XPGainSource.SELF);
         }
 
         NotificationManager.sendPlayerInformationChatOnly(player, "Salvage.Skills.Lottery.Normal",

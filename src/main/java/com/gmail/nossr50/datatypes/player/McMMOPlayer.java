@@ -21,6 +21,7 @@ import com.gmail.nossr50.datatypes.skills.ToolType;
 import com.gmail.nossr50.events.experience.McMMOPlayerPreXpGainEvent;
 import com.gmail.nossr50.locale.LocaleLoader;
 import com.gmail.nossr50.mcMMO;
+import com.gmail.nossr50.mcrpg.specialization.Specialization;
 import com.gmail.nossr50.party.ShareHandler;
 import com.gmail.nossr50.runnables.skills.AbilityDisableTask;
 import com.gmail.nossr50.runnables.skills.RuptureTask;
@@ -926,7 +927,9 @@ public class McMMOPlayer implements Identified {
     }
 
     /**
-     * Modifies an experience gain using skill modifiers, global rate and perks
+     * Modifies an experience gain using skill modifiers, the global rate and mcRPG's
+     * specialization multiplier (Primary, Secondary or not selected). mcRPG has no XP perks,
+     * so permission-based boosts are never applied.
      *
      * @param primarySkillType Skill being used
      * @param xp Experience amount to process
@@ -946,7 +949,7 @@ public class McMMOPlayer implements Identified {
                         * ExperienceConfig.getInstance()
                         .getExperienceGainsMultiplier(primarySkillType));
 
-        return PerksUtils.handleXpPerks(player, xp, primarySkillType);
+        return (float) (xp * Specialization.xpMultiplier(profile, primarySkillType));
     }
 
     public void checkGodMode() {

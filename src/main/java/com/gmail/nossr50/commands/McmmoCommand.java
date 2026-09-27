@@ -77,8 +77,9 @@ public class McmmoCommand implements CommandExecutor {
 
     private void displayOtherCommands(CommandSender sender) {
         //Don't show them this category if they have none of the permissions
+        // mcRPG: no admin chat
         if (!Permissions.skillreset(sender) && !Permissions.mmoedit(sender)
-                && !Permissions.adminChat(sender) && !Permissions.mcgod(sender)) {
+                && !Permissions.mcgod(sender)) {
             return;
         }
 
@@ -90,10 +91,6 @@ public class McmmoCommand implements CommandExecutor {
 
         if (Permissions.mmoedit(sender)) {
             sender.sendMessage(LocaleLoader.getString("Commands.mmoedit"));
-        }
-
-        if (Permissions.adminChat(sender)) {
-            sender.sendMessage(LocaleLoader.getString("Commands.AdminToggle"));
         }
 
         if (Permissions.mcgod(sender)) {

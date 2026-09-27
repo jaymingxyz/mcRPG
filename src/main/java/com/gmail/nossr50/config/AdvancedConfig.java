@@ -274,6 +274,17 @@ public class AdvancedConfig extends BukkitConfig {
             reason.add("Skills.Repair.SuperRepair.MaxBonusLevel should be at least 1!");
         }
 
+        /* SALVAGE (mcRPG) */
+        // At 100% a damaged item would return a new item's materials
+        if (getSalvageMasteryMaxBonus() < 0 || getSalvageMasteryMaxBonus() >= 100) {
+            reason.add("Skills.Salvage.SalvageMastery.MaxBonusPercentage should be at least 0"
+                    + " and below 100!");
+        }
+
+        if (getSalvageMasteryMaxLevel() < 1) {
+            reason.add("Skills.Salvage.SalvageMastery.MaxBonusLevel should be at least 1!");
+        }
+
         /* SMELTING */
         if (getBurnModifierMaxLevel() < 1) {
             reason.add("Skills.Smelting.FuelEfficiency.MaxBonusLevel should be at least 1!");
@@ -808,6 +819,15 @@ public class AdvancedConfig extends BukkitConfig {
 
     public double getArcaneSalvageExtractPartialEnchantsChance(int rank) {
         return config.getDouble("Skills.Salvage.ArcaneSalvage.ExtractPartialEnchant.Rank_" + rank);
+    }
+
+    // mcRPG: Salvage Mastery
+    public double getSalvageMasteryMaxBonus() {
+        return config.getDouble("Skills.Salvage.SalvageMastery.MaxBonusPercentage", 50.0D);
+    }
+
+    public int getSalvageMasteryMaxLevel() {
+        return config.getInt("Skills.Salvage.SalvageMastery.MaxBonusLevel", 100);
     }
 
     /* SMELTING */

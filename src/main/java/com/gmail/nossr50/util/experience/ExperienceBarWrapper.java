@@ -4,6 +4,9 @@ import com.gmail.nossr50.config.experience.ExperienceConfig;
 import com.gmail.nossr50.datatypes.player.McMMOPlayer;
 import com.gmail.nossr50.datatypes.skills.PrimarySkillType;
 import com.gmail.nossr50.locale.LocaleLoader;
+import com.gmail.nossr50.mcrpg.specialization.Specialization;
+import com.gmail.nossr50.mcrpg.specialization.SpecializationDisplay;
+import com.gmail.nossr50.mcrpg.specialization.SpecializationRole;
 import com.gmail.nossr50.util.player.PlayerLevelUtils;
 import com.gmail.nossr50.util.text.StringUtils;
 import java.util.List;
@@ -21,6 +24,7 @@ public class ExperienceBarWrapper {
     private BossBar bossBar;
     protected final McMMOPlayer mmoPlayer;
     private int lastLevelUpdated;
+    private SpecializationRole lastRoleUpdated; // mcRPG
 
     /*
      * This is stored to help optimize updating the title
@@ -42,13 +46,19 @@ public class ExperienceBarWrapper {
     }
 
     private void initBar() {
-        title = getTitleTemplate();
+        title = getSpecializationTaggedTitle();
         createBossBar();
     }
 
     public void updateTitle() {
-        title = getTitleTemplate();
+        title = getSpecializationTaggedTitle();
         bossBar.setTitle(title);
+    }
+
+    /** mcRPG: adds " (Primary)" or " (Secondary)" to the title for specialized skills. */
+    private String getSpecializationTaggedTitle() {
+        return SpecializationDisplay.xpBarTitle(getTitleTemplate(), mmoPlayer.getProfile(),
+                primarySkillType);
     }
 
     private String getTitleTemplate() {
@@ -130,10 +140,14 @@ public class ExperienceBarWrapper {
         }
 
         //Every time progress updates we need to check for a title update
-        if (getLevel() != lastLevelUpdated || ExperienceConfig.getInstance()
-                .getDoExperienceBarsAlwaysUpdateTitle()) {
+        // mcRPG: also when the skill is chosen or abandoned, so the (Primary) tag stays current
+        final SpecializationRole role = Specialization.roleOf(mmoPlayer.getProfile(),
+                primarySkillType);
+        if (getLevel() != lastLevelUpdated || role != lastRoleUpdated || ExperienceConfig
+                .getInstance().getDoExperienceBarsAlwaysUpdateTitle()) {
             updateTitle();
             lastLevelUpdated = getLevel();
+            lastRoleUpdated = role;
         }
     }
 

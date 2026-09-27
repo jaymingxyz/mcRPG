@@ -1,0 +1,34 @@
+#
+#  mcRPG: Specialization menu (/chooseskill)
+#  Each category gets one row: its icon on the left, then its skills.
+#  Icons are Minecraft item names. Unknown names, or items that do not exist on this
+#  server's Minecraft version, fall back to the default icon.
+###
+Skill_Selection:
+    Category_Icons:
+        Melee: SHIELD
+        Ranged: ARROW
+        Metallurgy: IRON_INGOT
+        Botany: OAK_SAPLING
+        Blacksmithing: SMITHING_TABLE
+        Survivalism: CAMPFIRE
+    Icons:
+        Swords: IRON_SWORD
+        Axes: IRON_AXE
+        Maces: MACE
+        Spears: IRON_SPEAR
+        Archery: BOW
+        Crossbows: CROSSBOW
+        Tridents: TRIDENT
+        Mining: IRON_PICKAXE
+        Smelting: FURNACE
+        Excavation: IRON_SHOVEL
+        Woodcutting: OAK_LOG
+        Herbalism: WHEAT
+        Alchemy: BREWING_STAND
+        Repair: ANVIL
+        Salvage: GOLD_BLOCK
+        Taming: BONE
+        Acrobatics: FEATHER
+        Fishing: FISHING_ROD
+        Unarmed: LEATHER

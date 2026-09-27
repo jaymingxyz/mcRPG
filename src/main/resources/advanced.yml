@@ -13,9 +13,6 @@
 #
 #  Settings for the Skills
 ###
-# Enables anonymous statistics
-Metrics:
-    bstats: true
 Feedback:
     PlayerTips: true
     SkillCommand:
@@ -28,7 +25,7 @@ Feedback:
         AbilityActivation:
             SendNotificationToOtherPlayers: true
     #The actionbar is the message location right above the health bar
-    ## If you disable the action bar messages, mcMMO will send the message to the chat system instead
+    ## If you disable the action bar messages, mcRPG will send the message to the chat system instead
     ActionBarNotifications:
         AbilityOff:
             Enabled: true
@@ -92,7 +89,7 @@ Feedback:
 Skills:
     General:
         # Attack Cooldown refers to the strength of attacks in Minecraft.
-        # If an attack is spammed, it will have less bonus damage and RNG for skills to activate from mcMMO.
+        # If an attack is spammed, it will have less bonus damage and RNG for skills to activate from mcRPG.
         # If you want, you can turn this behavior off by setting it to false.
         Attack_Cooldown:
             Adjust_Skills_For_Attack_Cooldown: true
@@ -417,6 +414,14 @@ Skills:
     #  Settings for Salvage
     ###
     Salvage:
+        # mcRPG: Salvage Mastery gives back part of the materials an item's damage costs.
+        # Whole materials are guaranteed; a leftover fraction is a chance at one more.
+        # MaxBonusPercentage: Share of the lost materials returned at MaxBonusLevel.
+        #   Must stay below 100, or damaged items would return a new item's materials.
+        # MaxBonusLevel: On this level, the maximum share is reached
+        SalvageMastery:
+            MaxBonusPercentage: 50.0
+            MaxBonusLevel: 100
         ArcaneSalvage:
             # EnchantLossEnabled: When salvaging enchanted items, the enchants may be lost
             # EnchantDowngradeEnabled: When salvaging enchanted items, the enchants may be downgraded

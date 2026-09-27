@@ -11,15 +11,21 @@ import com.gmail.nossr50.TestRegistryBootstrap;
 import com.gmail.nossr50.api.ItemSpawnReason;
 import com.gmail.nossr50.api.exceptions.InvalidSkillException;
 import com.gmail.nossr50.config.experience.ExperienceConfig;
+import com.gmail.nossr50.datatypes.experience.XPGainReason;
+import com.gmail.nossr50.datatypes.experience.XPGainSource;
 import com.gmail.nossr50.datatypes.interactions.NotificationType;
+import com.gmail.nossr50.datatypes.player.McMMOPlayer;
+import com.gmail.nossr50.datatypes.skills.PrimarySkillType;
 import com.gmail.nossr50.datatypes.skills.SubSkillType;
 import com.gmail.nossr50.mcMMO;
+import com.gmail.nossr50.mcrpg.salvage.SalvageXp;
 import com.gmail.nossr50.skills.salvage.salvageables.Salvageable;
 import com.gmail.nossr50.skills.salvage.salvageables.SalvageableManager;
 import com.gmail.nossr50.util.ItemUtils;
 import com.gmail.nossr50.util.Misc;
 import com.gmail.nossr50.util.Permissions;
 import com.gmail.nossr50.util.player.NotificationManager;
+import com.gmail.nossr50.util.random.ProbabilityUtil;
 import com.gmail.nossr50.util.skills.RankUtils;
 import com.gmail.nossr50.util.sounds.SoundManager;
 import com.gmail.nossr50.util.sounds.SoundType;
@@ -398,6 +404,154 @@ class SalvageManagerTest extends MMOTestEnvironment {
                         Mockito.any(Location.class), Mockito.any(Location.class),
                         Mockito.any(ItemStack.class), Mockito.anyDouble(),
                         Mockito.eq(ItemSpawnReason.SALVAGE_ENCHANTMENT_BOOK)));
+            }
+        }
+
+        // mcRPG: Salvage earns XP (see SalvageXpTest for the formula itself)
+
+        @Test
+        void successfulSalvageShouldEarnSalvageXp() {
+            try (MockedStatic<ItemUtils> ignoredItemUtils = Mockito.mockStatic(ItemUtils.class);
+                    MockedConstruction<ItemStack> ignoredStacks =
+                            Mockito.mockConstruction(ItemStack.class);
+                    MockedStatic<SalvageXp> salvageXp = Mockito.mockStatic(SalvageXp.class)) {
+                salvageXp.when(() -> SalvageXp.forItem(helmet, salvageable)).thenReturn(1234F);
+
+                salvageManager.handleSalvage(anvilLocation, helmet);
+
+                Mockito.verify(mmoPlayer).beginXpGain(Mockito.eq(PrimarySkillType.SALVAGE),
+                        Mockito.eq(1234F), Mockito.any(XPGainReason.class),
+                        Mockito.any(XPGainSource.class));
+            }
+        }
+
+        @Test
+        void salvageWithNoWearOrFoundEnchantmentsShouldEarnNoXp() {
+            try (MockedStatic<ItemUtils> ignoredItemUtils = Mockito.mockStatic(ItemUtils.class);
+                    MockedConstruction<ItemStack> ignoredStacks =
+                            Mockito.mockConstruction(ItemStack.class)) {
+                // An undamaged helmet the player never wore, found nowhere
+                salvageManager.handleSalvage(anvilLocation, helmet);
+
+                Mockito.verify(mmoPlayer, never()).beginXpGain(
+                        Mockito.eq(PrimarySkillType.SALVAGE), Mockito.anyFloat(),
+                        Mockito.any(XPGainReason.class), Mockito.any(XPGainSource.class));
+            }
+        }
+
+        @Test
+        void refusedSalvageShouldEarnNoXp() {
+            // A helmet too damaged to return any material is refused before any XP
+            Mockito.when(helmetMeta.getDamage()).thenReturn(100);
+
+            salvageManager.handleSalvage(anvilLocation, helmet);
+
+            Mockito.verify(mmoPlayer, never()).beginXpGain(Mockito.eq(PrimarySkillType.SALVAGE),
+                    Mockito.anyFloat(), Mockito.any(XPGainReason.class),
+                    Mockito.any(XPGainSource.class));
+        }
+
+        // mcRPG: Salvage Mastery (see SalvageMasteryTest for the formula itself). The helmet
+        // returns up to 5 diamonds.
+
+        private void masteryAtLevel(int level) {
+            Mockito.when(advancedConfig.getSalvageMasteryMaxBonus()).thenReturn(50D);
+            Mockito.when(advancedConfig.getSalvageMasteryMaxLevel()).thenReturn(100);
+            playerProfile.modifySkill(PrimarySkillType.SALVAGE, level);
+        }
+
+        private void verifyYield(String materials) {
+            notificationManager.verify(() -> NotificationManager.sendPlayerInformationChatOnly(
+                    Mockito.eq(player), Mockito.eq("Salvage.Skills.Lottery.Normal"),
+                    Mockito.eq(materials), Mockito.anyString()));
+        }
+
+        @Test
+        void masteryShouldReturnPartOfTheMaterialsLostToDamage() {
+            try (MockedStatic<ItemUtils> ignoredItemUtils = Mockito.mockStatic(ItemUtils.class);
+                    MockedConstruction<ItemStack> ignoredStacks =
+                            Mockito.mockConstruction(ItemStack.class)) {
+                // Given - at 20% durability the helmet returns 1 diamond and loses 4 to
+                // damage; level 100 gets back half of those
+                masteryAtLevel(100);
+                Mockito.when(helmetMeta.getDamage()).thenReturn(80);
+
+                salvageManager.handleSalvage(anvilLocation, helmet);
+
+                verifyYield("3");
+            }
+        }
+
+        @Test
+        void masteryShouldLetHighLevelsSalvageItemsTooDamagedForLowLevels() {
+            try (MockedStatic<ItemUtils> ignoredItemUtils = Mockito.mockStatic(ItemUtils.class);
+                    MockedConstruction<ItemStack> ignoredStacks =
+                            Mockito.mockConstruction(ItemStack.class)) {
+                // Given - a worn-out helmet returns nothing; level 40 gets back 20% of all 5
+                masteryAtLevel(40);
+                Mockito.when(helmetMeta.getDamage()).thenReturn(100);
+
+                salvageManager.handleSalvage(anvilLocation, helmet);
+
+                verifyYield("1");
+            }
+        }
+
+        @Test
+        void itemsStillTooDamagedAfterMasteryShouldBeRefusedWithoutARoll() {
+            try (MockedStatic<ProbabilityUtil> rng = Mockito.mockStatic(ProbabilityUtil.class)) {
+                rng.when(() -> ProbabilityUtil.isStaticSkillRNGSuccessful(Mockito.any(),
+                        Mockito.<McMMOPlayer>any(), Mockito.anyDouble())).thenReturn(true);
+                // Given - level 39 gets back 0.975 of a diamond, which isn't a whole one
+                masteryAtLevel(39);
+                Mockito.when(helmetMeta.getDamage()).thenReturn(100);
+
+                salvageManager.handleSalvage(anvilLocation, helmet);
+
+                // Then - refused before rolling, so clicking again can't re-roll a refusal
+                notificationManager.verify(() -> NotificationManager.sendPlayerInformation(player,
+                        NotificationType.SUBSKILL_MESSAGE_FAILED, "Salvage.Skills.TooDamaged"));
+                rng.verify(() -> ProbabilityUtil.isStaticSkillRNGSuccessful(Mockito.any(),
+                        Mockito.<McMMOPlayer>any(), Mockito.anyDouble()), never());
+            }
+        }
+
+        @Test
+        void leftoverFractionShouldBeAChanceAtOneMoreMaterial() {
+            try (MockedStatic<ItemUtils> ignoredItemUtils = Mockito.mockStatic(ItemUtils.class);
+                    MockedConstruction<ItemStack> ignoredStacks =
+                            Mockito.mockConstruction(ItemStack.class);
+                    MockedStatic<ProbabilityUtil> rng =
+                            Mockito.mockStatic(ProbabilityUtil.class)) {
+                rng.when(() -> ProbabilityUtil.isStaticSkillRNGSuccessful(
+                        Mockito.eq(PrimarySkillType.SALVAGE), Mockito.eq(mmoPlayer),
+                        Mockito.doubleThat(chance -> Math.abs(chance - 50D) < 1e-9)))
+                        .thenReturn(true);
+                // Given - at 40% durability the helmet returns 2 and loses 3; level 100 gets
+                // back 1.5: one for sure and a 50% chance at another, which succeeds
+                masteryAtLevel(100);
+                Mockito.when(helmetMeta.getDamage()).thenReturn(60);
+
+                salvageManager.handleSalvage(anvilLocation, helmet);
+
+                verifyYield("4");
+            }
+        }
+
+        @Test
+        void scrapCollectorShouldStillCapTheYield() {
+            try (MockedStatic<ItemUtils> ignoredItemUtils = Mockito.mockStatic(ItemUtils.class);
+                    MockedConstruction<ItemStack> ignoredStacks =
+                            Mockito.mockConstruction(ItemStack.class)) {
+                // Given - Scrap Collector rank 1 allows a single material
+                Mockito.when(RankUtils.getRank(player, SubSkillType.SALVAGE_SCRAP_COLLECTOR))
+                        .thenReturn(1);
+                masteryAtLevel(100);
+                Mockito.when(helmetMeta.getDamage()).thenReturn(80);
+
+                salvageManager.handleSalvage(anvilLocation, helmet);
+
+                verifyYield("1");
             }
         }
     }

@@ -21,10 +21,10 @@ class CommandRegistrationManagerTest {
 
     /**
      * Commands registered through the ACF command framework in CommandManager rather than
-     * CommandRegistrationManager.
+     * CommandRegistrationManager. mcRPG has no party system, so partychat is not declared.
      */
     private static final Set<String> ACF_REGISTERED_COMMANDS =
-            Set.of("mmopower", "adminchat", "partychat");
+            Set.of("rpgpower"); // mcRPG: mmopower is now rpgpower, and there is no admin chat
 
     @Test
     void everyDeclaredCommandShouldHaveARegisteredExecutor() throws Exception {

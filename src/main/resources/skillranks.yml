@@ -1,5 +1,5 @@
 # This file defines the rank level requirements for a subskill.
-# You cannot alter how many ranks a skill has, that is coded into mcMMO directly.
+# You cannot alter how many ranks a skill has, that is coded into mcRPG directly.
 # You can however, change when they unlock, if you make all ranks of a skill level 0 for example every player will have the most powerful version of that skill right away.
 # Retro Mode and Standard have separate config settings to make it easier for server owners to understand the difference between the two.
 # Retro Mode is setup to be an entirely cosmetic change, keeping the old 0-1000 feeling of mcMMO.
@@ -472,8 +472,10 @@ Spears:
             Rank_10: 950
 Salvage:
     ScrapCollector:
+        # mcRPG: Rank_1 is 0 because Salvage earns its own XP; at 1, new players could never
+        # salvage and so never gain the first level
         Standard:
-            Rank_1: 1
+            Rank_1: 0
             Rank_2: 10
             Rank_3: 15
             Rank_4: 20

@@ -1,11 +1,11 @@
 #
-#  mcMMO configuration
+#  mcRPG configuration
 #  Last updated on ${project.version}-b${BUILD_NUMBER}
 #
 #####
 
 #
-#  Settings for mcMMO in general
+#  Settings for mcRPG in general
 ###
 General:
     # When players reach certain level milestones messages will be broadcast
@@ -43,11 +43,6 @@ General:
                 Restrict_Distance: false
                 # When using Restrict_Distance the blow setting configures the range of the broadcast
                 Restricted_Radius: 100
-        # Turning this on will scale mcMMO around 1-1000 with default scaling factor
-        # Everything in your config related to skill level requirements, skill level bonuses, etc. will be multiplied by 10 when this mode is on
-        # This change is purely cosmetic, it retains the old feel of mcMMO where you could level up thousands of times
-    RetroMode:
-        Enabled: true
     Locale: en_US
     PowerLevel:
         Skill_Mastery:
@@ -61,14 +56,12 @@ General:
     Show_Profile_Loaded: false
     # Amount of time (in minutes) to wait between saves of player information
     Save_Interval: 10
-    # Allow mcMMO to report on basic anonymous usage
-    Stats_Tracking: true
     Power_Level_Cap: 0
-    # Should mcMMO truncate levels if you lower your max level cap for a skillname
+    # Should mcRPG truncate levels if you lower your max level cap for a skillname
     TruncateSkills: true
-    # Should mcMMO print out debug messages?
+    # Should mcRPG print out debug messages?
     Verbose_Logging: false
-    # Should mcMMO over-write configs to update, or make new ones ending in .new?
+    # Should mcRPG over-write configs to update, or make new ones ending in .new?
     Config_Update_Overwrite: true
     # Play level-up sounds
     LevelUp_Sounds: true
@@ -85,27 +78,27 @@ General:
     # PlaceholderAPI settings.
     PlaceholderAPI:
         Leaderboards:
-            # Max rank position kept in mcMMO's PlaceholderAPI leaderboard cache.
+            # Max rank position kept in mcRPG's PlaceholderAPI leaderboard cache.
             # Requests above this number return an empty string.
             # Higher values use more memory and read more database rows on every cache refresh.
             # Clamped between 10 and 1000.
             Max_Tracked_Rank: 100
 
-    # How often mcMMO refreshes cached leaderboard data.
+    # How often mcRPG refreshes cached leaderboard data.
     Leaderboards:
         # Intervals are in seconds and have a 60 second minimum; values below 60 are
         # treated as 60.
         Refresh_Interval_Seconds:
             # How often the PlaceholderAPI leaderboard cache refreshes on SQL (MySQL/MariaDB)
-            # databases. /mctop and /mcrank on SQL are unaffected and always query live data.
+            # databases. /rpgtop and /rpgrank on SQL are unaffected and always query live data.
             SQL: 60
-            # How often FlatFile leaderboards are rebuilt. This affects /mctop, /mcrank, and
+            # How often FlatFile leaderboards are rebuilt. This affects /rpgtop, /rpgrank, and
             # the PlaceholderAPI leaderboard placeholders. Rebuilding scans the whole user
             # file, which is expensive on large servers, so it refreshes far less often by default.
             FlatFile: 600
 
 #
-#  Settings for the mcMMO scoreboards
+#  Settings for the mcRPG scoreboards
 ###
 Scoreboard:
     # Set this to true to enable scoreboards
@@ -113,10 +106,10 @@ Scoreboard:
     # Display player's power levels below their names?
     Power_Level_Tags: false
 
-    # Allow players to use "/mcscoreboard keep" to keep the scoreboard up
+    # Allow players to use "/rpgscoreboard keep" to keep the scoreboard up
     Allow_Keep: true
 
-    # Show the /mcstats scoreboard automatically after logging in
+    # Show the /rpgstats scoreboard automatically after logging in
     Show_Stats_After_Login: false
 
     # Show scoreboard tips 5 times. Tips are only displayed once for every login session.
@@ -133,30 +126,30 @@ Scoreboard:
     # Print: Should the command output be printed in chat?
     # Board: Should the command output be displayed in the scoreboard sidebar?
     # Display_Time: Amount of time (seconds) to display in the sidebar before clearing.
-    # To display permanently, use "/mcscoreboard keep" or set to -1
+    # To display permanently, use "/rpgscoreboard keep" or set to -1
     Types:
-        # Settings for /mcrank
+        # Settings for /rpgrank
         # The sub-options (Print, Board, Display_Time) are the same for each type.
         Rank:
             Print: false
             Board: true
             Display_Time: 15
-        # Settings for /mctop
+        # Settings for /rpgtop
         Top:
             Print: true
             Board: true
             Display_Time: 15
-        # Settings for /mcstats
+        # Settings for /rpgstats
         Stats:
             Print: false
             Board: true
             Display_Time: 15
-        # Settings for /inspect
+        # Settings for /rpginspect
         Inspect:
             Print: false
             Board: true
             Display_Time: 20
-        # Settings for /mccooldown
+        # Settings for /rpgcooldowns
         Cooldown:
             Print: true
             Board: true
@@ -186,7 +179,7 @@ Database_Purging:
 
 #
 #  Settings for Backups
-#  Allow mcMMO to create zip backups for config files and flatfile data on shutdown.
+#  Allow mcRPG to create zip backups for config files and flatfile data on shutdown.
 ###
 Backups:
     Enabled: true
@@ -206,7 +199,7 @@ MySQL:
         User_Name: UserName
         User_Password: UserPassword
         Name: DataBaseName
-        TablePrefix: mcmmo_
+        TablePrefix: mcrpg_
         # This setting is the max simultaneous mysql connections allowed at a time, needs to be
         # high enough to support multiple player logins in quick succession
         MaxConnections:
@@ -283,7 +276,7 @@ Mods:
     Entity_Mods_Enabled: false
 
 #
-#  Settings for mcMMO items
+#  Settings for mcRPG items
 ###
 Items:
     Chimaera_Wing:
@@ -300,45 +293,6 @@ Items:
         Sound_Enabled: true
     Flux_Pickaxe:
         Sound_Enabled: true
-
-#
-#  Settings for Parties
-###
-Party:
-    # Enable Hurting other players in the same party
-    FriendlyFire: false
-    # Maximum size for a party, -1 for infinite
-    MaxSize: -1
-    # Amount of time (in hours) to wait between automatically kicking old party members
-    # To only run at server start, set to 0
-    # To never kick old users, set to -1
-    AutoKick_Interval: 12
-    # Any user who hasn't connected in this many days will get kicked from their party
-    Old_Party_Member_Cutoff: 7
-
-    # Settings for party share modes
-    Sharing:
-        ExpShare_bonus_base: 1.1
-        ExpShare_bonus_increase: 1.05
-        ExpShare_bonus_cap: 1.5
-        Range: 75.0
-
-    # Party members level up their party by earning individual experience
-    # Newly created parties will not immediately have access to all the party features
-    # and have to level up the party a bit before they can use them.
-    Leveling:
-        Level_Cap: 10
-
-        # Uses the regular XP formula but is multiplied by <amount of party members> + <Xp_Curve_Modifier>
-        Xp_Curve_Modifier: 3
-        Near_Members_Needed: false
-        Inform_All_Party_Members_On_LevelUp: false
-
-        Chat_UnlockLevel: 1
-        Teleport_UnlockLevel: 2
-        Alliance_UnlockLevel: 5
-        ItemShare_UnlockLevel: 8
-        XpShare_UnlockLevel: 10
 
 #
 #  Settings for Abilities
@@ -699,29 +653,20 @@ Bonus_Drops:
 ###
 Commands:
     Skills:
-        # Turn this off to prevent mcMMO URL links from being sent
+        # Turn this off to prevent mcRPG URL links from being sent
         URL_Links: true
     Generic:
-        # If true, when using partial names in commands mcMMO will try to look for a match from
+        # If true, when using partial names in commands mcRPG will try to look for a match from
         # the offline players. Enabling this might slow the server down if there are a lot of offline players.
         Match_OfflinePlayers: false
     Database:
         # Database command cooldown in milliseconds, cannot be changed below the default value. (1750)
-        # Prevents players from spamming /mctop or /mcrank
+        # Prevents players from spamming /rpgtop or /rpgrank
         Player_Cooldown: 1750
     mcmmo:
         Donate_Message: true
     inspect:
         Max_Distance: 30.0
-    ptp:
-        Cooldown: 120
-        Warmup: 5
-        RecentlyHurt_Cooldown: 60
-        Accept_Required: true
-        Request_Timeout: 300
-        # If true, require players to have a mcmmo.commands.ptp.world.[WorldName] permission
-        # to teleport to, from, or within any given world.
-        World_Based_Permissions: false
 
 #
 #  Settings for particles
@@ -740,3 +685,18 @@ Sounds:
     # This setting controls the master volume. 1.0 is Max,  0 would be off
     MasterVolume: 1.0
     
+#
+#  mcRPG: Specializations (Primary and Secondary)
+###
+Specialization:
+    # Remind players on login if they haven't chosen a Primary or Secondary Specialization
+    Login_Reminder: true
+    Choose:
+        # Ask for confirmation before a skill chosen in the Specialization menu is locked in
+        GUI_Confirmation: true
+    Abandon:
+        # How long a player has to run /abandonskill <skill> confirm after the warning
+        Confirm_Timeout_Seconds: 30
+        # Share of its total XP an abandoned skill keeps. Its level is worked out again from
+        # the XP it keeps, so it keeps more than this share of its level
+        XP_Kept_Percent: 10

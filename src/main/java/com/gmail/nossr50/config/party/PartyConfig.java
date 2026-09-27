@@ -1,20 +1,19 @@
 package com.gmail.nossr50.config.party;
 
-import com.gmail.nossr50.config.BukkitConfig;
 import java.io.File;
 
-public class PartyConfig extends BukkitConfig {
+/**
+ * mcRPG has no party system. This class keeps mcMMO's party checks compiling, and every one of
+ * them sees parties as disabled. No party.yml is created, because there is nothing to configure.
+ */
+public class PartyConfig {
+    /**
+     * @param dataFolder ignored; kept so callers written for mcMMO's file-backed config compile
+     */
     public PartyConfig(File dataFolder) {
-        super("party.yml", dataFolder);
-        validate();
-    }
-
-    @Override
-    protected void loadKeys() {
-
     }
 
     public boolean isPartyEnabled() {
-        return config.getBoolean("Party.Enabled", true);
+        return false;
     }
 }

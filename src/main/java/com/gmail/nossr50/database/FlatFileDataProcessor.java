@@ -55,6 +55,12 @@ import static com.gmail.nossr50.database.FlatFileDatabaseManager.SKILLS_UNARMED;
 import static com.gmail.nossr50.database.FlatFileDatabaseManager.SKILLS_WOODCUTTING;
 import static com.gmail.nossr50.database.FlatFileDatabaseManager.USERNAME_INDEX;
 import static com.gmail.nossr50.database.FlatFileDatabaseManager.UUID_INDEX;
+import static com.gmail.nossr50.database.FlatFileDatabaseManager.EXP_SALVAGE;
+import static com.gmail.nossr50.database.FlatFileDatabaseManager.EXP_SMELTING;
+import static com.gmail.nossr50.database.FlatFileDatabaseManager.SKILLS_SALVAGE;
+import static com.gmail.nossr50.database.FlatFileDatabaseManager.SKILLS_SMELTING;
+import static com.gmail.nossr50.database.FlatFileDatabaseManager.PRIMARY_SKILL;
+import static com.gmail.nossr50.database.FlatFileDatabaseManager.SECONDARY_SKILL;
 
 import com.gmail.nossr50.database.flatfile.FlatFileDataBuilder;
 import com.gmail.nossr50.database.flatfile.FlatFileDataContainer;
@@ -109,7 +115,7 @@ public class FlatFileDataProcessor {
             //Data is considered junk
             if (!corruptDataFound) {
                 logger.severe(
-                        "Some corrupt data was found in mcmmo.users and has been repaired, it is possible that some player data has been lost in this process.");
+                        "Some corrupt data was found in mcrpg.users and has been repaired, it is possible that some player data has been lost in this process.");
                 corruptDataFound = true;
             }
 
@@ -341,6 +347,11 @@ public class FlatFileDataProcessor {
                  EXP_SWORDS, EXP_AXES, EXP_ACROBATICS, EXP_TAMING, EXP_FISHING, EXP_ALCHEMY,
                  EXP_CROSSBOWS,
                  EXP_TRIDENTS, EXP_MACES, EXP_SPEARS -> ExpectedType.FLOAT;
+            // mcRPG: Salvage and Smelting store their own level and XP
+            case SKILLS_SALVAGE, SKILLS_SMELTING -> ExpectedType.INTEGER;
+            case EXP_SALVAGE, EXP_SMELTING -> ExpectedType.FLOAT;
+            // mcRPG: specialization slots hold a skill name or NONE
+            case PRIMARY_SKILL, SECONDARY_SKILL -> ExpectedType.STRING;
             case UUID_INDEX -> ExpectedType.UUID;
             case OVERHAUL_LAST_LOGIN -> ExpectedType.LONG;
             default -> throw new IndexOutOfBoundsException();

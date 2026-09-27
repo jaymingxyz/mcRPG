@@ -5,6 +5,7 @@ import com.gmail.nossr50.datatypes.player.PlayerProfile;
 import com.gmail.nossr50.datatypes.skills.PrimarySkillType;
 import com.gmail.nossr50.locale.LocaleLoader;
 import com.gmail.nossr50.mcMMO;
+import com.gmail.nossr50.mcrpg.specialization.SpecializationDisplay;
 import com.gmail.nossr50.util.MetadataConstants;
 import com.gmail.nossr50.util.Misc;
 import com.gmail.nossr50.util.player.UserManager;
@@ -217,6 +218,13 @@ public final class CommandUtils {
     }
 
     public static String displaySkill(PlayerProfile profile, PrimarySkillType skill) {
+        // mcRPG: every skill line ends with its specialization role and XP rate
+        return displaySkillWithoutSpecialization(profile, skill) + " "
+                + SpecializationDisplay.statsTag(profile, skill);
+    }
+
+    private static String displaySkillWithoutSpecialization(PlayerProfile profile,
+            PrimarySkillType skill) {
         if (SkillTools.isChildSkill(skill)) {
             return LocaleLoader.getString("Skills.ChildStats", LocaleLoader.getString(
                             StringUtils.getCapitalized(skill.toString()) + ".Listener") + " ",

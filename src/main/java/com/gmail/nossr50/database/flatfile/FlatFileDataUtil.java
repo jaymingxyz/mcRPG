@@ -55,6 +55,12 @@ import static com.gmail.nossr50.database.FlatFileDatabaseManager.SKILLS_UNARMED;
 import static com.gmail.nossr50.database.FlatFileDatabaseManager.SKILLS_WOODCUTTING;
 import static com.gmail.nossr50.database.FlatFileDatabaseManager.USERNAME_INDEX;
 import static com.gmail.nossr50.database.FlatFileDatabaseManager.UUID_INDEX;
+import static com.gmail.nossr50.database.FlatFileDatabaseManager.EXP_SALVAGE;
+import static com.gmail.nossr50.database.FlatFileDatabaseManager.EXP_SMELTING;
+import static com.gmail.nossr50.database.FlatFileDatabaseManager.SKILLS_SALVAGE;
+import static com.gmail.nossr50.database.FlatFileDatabaseManager.SKILLS_SMELTING;
+import static com.gmail.nossr50.database.FlatFileDatabaseManager.PRIMARY_SKILL;
+import static com.gmail.nossr50.database.FlatFileDatabaseManager.SECONDARY_SKILL;
 
 import com.gmail.nossr50.database.FlatFileDataFlag;
 import com.gmail.nossr50.database.FlatFileDatabaseManager;
@@ -140,6 +146,11 @@ public class FlatFileDataUtil {
                  EXP_SWORDS, EXP_AXES, EXP_ACROBATICS, EXP_TAMING, EXP_FISHING, EXP_ALCHEMY,
                  EXP_CROSSBOWS,
                  EXP_TRIDENTS, EXP_MACES, EXP_SPEARS -> "0";
+            // mcRPG: Salvage and Smelting store their own level and XP
+            case SKILLS_SALVAGE, SKILLS_SMELTING -> String.valueOf(startingLevel);
+            case EXP_SALVAGE, EXP_SMELTING -> "0";
+            // mcRPG: an empty specialization slot
+            case PRIMARY_SKILL, SECONDARY_SKILL -> FlatFileDatabaseManager.EMPTY_SPECIALIZATION;
             case UUID_INDEX ->
                     throw new IndexOutOfBoundsException(); //TODO: Add UUID recovery? Might not even be worth it.
             default -> throw new IndexOutOfBoundsException();

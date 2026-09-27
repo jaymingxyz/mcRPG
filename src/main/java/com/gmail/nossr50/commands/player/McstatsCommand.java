@@ -2,6 +2,7 @@ package com.gmail.nossr50.commands.player;
 
 import com.gmail.nossr50.locale.LocaleLoader;
 import com.gmail.nossr50.mcMMO;
+import com.gmail.nossr50.mcrpg.specialization.SpecializationDisplay;
 import com.gmail.nossr50.util.commands.CommandUtils;
 import com.gmail.nossr50.util.player.UserManager;
 import com.gmail.nossr50.util.scoreboards.ScoreboardManager;
@@ -45,9 +46,9 @@ public class McstatsCommand implements TabExecutor {
             player.sendMessage(LocaleLoader.getString("Stats.Own.Stats"));
             player.sendMessage(LocaleLoader.getString("mcMMO.NoSkillNote"));
 
-            CommandUtils.printGatheringSkills(player);
-            CommandUtils.printCombatSkills(player);
-            CommandUtils.printMiscSkills(player);
+            // mcRPG: specialization summary and mcRPG's four skill categories
+            SpecializationDisplay.sendSkillsByCategory(player,
+                    UserManager.getPlayer(player).getProfile(), player);
 
             int powerLevelCap = mcMMO.p.getGeneralConfig().getPowerLevelCap();
 

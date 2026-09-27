@@ -83,29 +83,19 @@ class SkillToolsTest {
     // ------------------------------------------------------------------------
 
     @Test
-    void nonChildSkillsShouldContainAllPrimarySkillsExceptSalvageAndSmelting() {
-        List<PrimarySkillType> expected = Arrays.stream(PrimarySkillType.values())
-                .filter(t -> t != PrimarySkillType.SALVAGE && t != PrimarySkillType.SMELTING)
-                .collect(Collectors.toList());
-
+    void nonChildSkillsShouldContainEveryPrimarySkill() {
+        // mcRPG: Salvage and Smelting are standalone skills, so every skill is a non-child skill
         assertThat(SkillTools.NON_CHILD_SKILLS)
-                .containsExactlyInAnyOrderElementsOf(expected);
+                .containsExactlyInAnyOrder(PrimarySkillType.values());
     }
 
     @Test
-    void isChildSkillShouldReturnTrueOnlyForSalvageAndSmelting() {
+    void isChildSkillShouldReturnFalseForEverySkill() {
+        // mcRPG has no child skills
         for (PrimarySkillType type : PrimarySkillType.values()) {
-            boolean isChild = SkillTools.isChildSkill(type);
-
-            if (type == PrimarySkillType.SALVAGE || type == PrimarySkillType.SMELTING) {
-                assertThat(isChild)
-                        .as("%s should be considered a child skill", type)
-                        .isTrue();
-            } else {
-                assertThat(isChild)
-                        .as("%s should NOT be considered a child skill", type)
-                        .isFalse();
-            }
+            assertThat(SkillTools.isChildSkill(type))
+                    .as("%s should NOT be considered a child skill", type)
+                    .isFalse();
         }
     }
 

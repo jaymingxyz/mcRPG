@@ -8,6 +8,7 @@ import com.gmail.nossr50.datatypes.experience.FormulaType;
 import com.gmail.nossr50.datatypes.skills.MaterialType;
 import com.gmail.nossr50.datatypes.skills.PrimarySkillType;
 import com.gmail.nossr50.datatypes.skills.alchemy.PotionStage;
+import com.gmail.nossr50.mcrpg.specialization.SpecializationRole;
 import com.gmail.nossr50.util.text.StringUtils;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -22,6 +23,7 @@ import org.bukkit.block.data.BlockData;
 import org.bukkit.boss.BarColor;
 import org.bukkit.boss.BarStyle;
 import org.bukkit.entity.EntityType;
+import org.jetbrains.annotations.NotNull;
 
 public class ExperienceConfig extends BukkitConfig {
     private static ExperienceConfig instance;
@@ -521,6 +523,34 @@ public class ExperienceConfig extends BukkitConfig {
                 1D));
     }
 
+    /* mcRPG: specialization XP multipliers (Specialization.Multipliers) */
+
+    // Indexed by SpecializationRole ordinal. Built once and replaced as a whole, so XP gain
+    // reads on any thread see either nothing yet or the complete array.
+    private volatile double[] specializationMultipliers;
+
+    /**
+     * The XP multiplier for a skill with this role: Primary, Secondary or not selected.
+     * Negative values in experience.yml are treated as 0.
+     *
+     * @param role the skill's role in the player's specialization
+     * @return the multiplier to apply to XP earned in that skill
+     */
+    public double getSpecializationMultiplier(@NotNull SpecializationRole role) {
+        double[] multipliers = specializationMultipliers;
+        if (multipliers == null) {
+            final SpecializationRole[] roles = SpecializationRole.values();
+            multipliers = new double[roles.length];
+            for (SpecializationRole each : roles) {
+                multipliers[each.ordinal()] = Math.max(0D, config.getDouble(
+                        "Specialization.Multipliers." + each.configKey(),
+                        each.defaultMultiplier()));
+            }
+            specializationMultipliers = multipliers;
+        }
+        return multipliers[role.ordinal()];
+    }
+
     /* Custom XP perk */
     public double getCustomXpPerkBoost() {
         if (customXpPerkBoost == null) {
@@ -770,6 +800,16 @@ public class ExperienceConfig extends BukkitConfig {
         return config.getDouble(
                 "Experience_Values.Repair." + StringUtils.getCapitalized(
                         repairMaterialType.toString()));
+    }
+
+    /* mcRPG: Salvage */
+    public double getSalvageWearXpBase() {
+        return Math.max(0D, config.getDouble("Experience_Values.Salvage.Wear_Base", 1000D));
+    }
+
+    public double getSalvageFoundEnchantmentXpPerLevel() {
+        return Math.max(0D, config.getDouble(
+                "Experience_Values.Salvage.Found_Enchantment_Per_Level", 1000D));
     }
 
     /* Taming */

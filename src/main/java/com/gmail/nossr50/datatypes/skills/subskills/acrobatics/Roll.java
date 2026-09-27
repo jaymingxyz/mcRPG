@@ -129,7 +129,7 @@ public class Roll extends AcrobaticsSubSkill {
      */
     @Override
     public String getPermissionNode() {
-        return ("mcmmo.ability." + getPrimaryKeyName() + "." + getConfigKeyName()).toLowerCase(
+        return ("mcrpg.ability." + getPrimaryKeyName() + "." + getConfigKeyName()).toLowerCase(
                 Locale.ENGLISH);
     }
 

@@ -16,7 +16,7 @@
 ## This defaults to OTHER.
 #
 # SalvageMaterial: This is the material name of the item used to salvage this item.
-## This is required to be set for non craftable items, if not set mcMMO checks the crafting recipe to see which items
+## This is required to be set for non craftable items, if not set mcRPG checks the crafting recipe to see which items
 ## should be dropped when salvaging the item.
 #
 # SalvageMaterialMetadata: This is the metadata of the item used to salvage this item.
@@ -25,7 +25,8 @@
 #
 # MaximumDurability: This is the maximum durability of the item.
 #
-# MinimumLevel: This is the minimum repair level needed to salvage this item.
+# MinimumLevel: This is the minimum Salvage level needed to salvage this item.
+## mcRPG ships every item at 0, so players of any level can salvage any gear.
 ## Valid values are => 0
 ## This defaults to 0
 #
@@ -37,7 +38,7 @@
 ## This defaults to 1
 #
 #
-# The following is the default salvage config that ships with mcMMO, it contains all vanilla items that are salvageable.
+# The following is the default salvage config that ships with mcRPG, it contains all vanilla items that are salvageable.
 #
 #
 ###
@@ -244,44 +245,44 @@ Salvageables:
     ###
     # Tools
     DIAMOND_SWORD:
-        MinimumLevel: 50
+        MinimumLevel: 0
         XpMultiplier: .5
         MaximumQuantity: 2
     DIAMOND_SPEAR:
-        MinimumLevel: 50
+        MinimumLevel: 0
         XpMultiplier: .5
         MaximumQuantity: 1
     DIAMOND_SHOVEL:
-        MinimumLevel: 50
+        MinimumLevel: 0
         XpMultiplier: .3
         MaximumQuantity: 1
     DIAMOND_PICKAXE:
-        MinimumLevel: 50
+        MinimumLevel: 0
         XpMultiplier: 1
         MaximumQuantity: 3
     DIAMOND_AXE:
-        MinimumLevel: 50
+        MinimumLevel: 0
         XpMultiplier: 1
         MaximumQuantity: 3
     DIAMOND_HOE:
-        MinimumLevel: 50
+        MinimumLevel: 0
         XpMultiplier: .5
         MaximumQuantity: 2
     # Armor
     DIAMOND_HELMET:
-        MinimumLevel: 50
+        MinimumLevel: 0
         XpMultiplier: 6
         MaximumQuantity: 5
     DIAMOND_CHESTPLATE:
-        MinimumLevel: 50
+        MinimumLevel: 0
         XpMultiplier: 6
         MaximumQuantity: 8
     DIAMOND_LEGGINGS:
-        MinimumLevel: 50
+        MinimumLevel: 0
         XpMultiplier: 6
         MaximumQuantity: 7
     DIAMOND_BOOTS:
-        MinimumLevel: 50
+        MinimumLevel: 0
         XpMultiplier: 6
         MaximumQuantity: 4
     #
@@ -289,44 +290,44 @@ Salvageables:
     ###
     # Tools
     NETHERITE_SWORD:
-        MinimumLevel: 100
+        MinimumLevel: 0
         XpMultiplier: .5
         MaximumQuantity: 4
     NETHERITE_SPEAR:
-        MinimumLevel: 100
+        MinimumLevel: 0
         XpMultiplier: .3
         MaximumQuantity: 4
     NETHERITE_SHOVEL:
-        MinimumLevel: 100
+        MinimumLevel: 0
         XpMultiplier: .3
         MaximumQuantity: 4
     NETHERITE_PICKAXE:
-        MinimumLevel: 100
+        MinimumLevel: 0
         XpMultiplier: 1
         MaximumQuantity: 4
     NETHERITE_AXE:
-        MinimumLevel: 100
+        MinimumLevel: 0
         XpMultiplier: 1
         MaximumQuantity: 4
     NETHERITE_HOE:
-        MinimumLevel: 100
+        MinimumLevel: 0
         XpMultiplier: .5
         MaximumQuantity: 4
     # Armor
     NETHERITE_HELMET:
-        MinimumLevel: 100
+        MinimumLevel: 0
         XpMultiplier: 6
         MaximumQuantity: 4
     NETHERITE_CHESTPLATE:
-        MinimumLevel: 100
+        MinimumLevel: 0
         XpMultiplier: 6
         MaximumQuantity: 4
     NETHERITE_LEGGINGS:
-        MinimumLevel: 100
+        MinimumLevel: 0
         XpMultiplier: 6
         MaximumQuantity: 4
     NETHERITE_BOOTS:
-        MinimumLevel: 100
+        MinimumLevel: 0
         XpMultiplier: 6
         MaximumQuantity: 4
     #

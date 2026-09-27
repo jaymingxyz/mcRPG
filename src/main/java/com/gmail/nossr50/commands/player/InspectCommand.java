@@ -5,6 +5,7 @@ import com.gmail.nossr50.datatypes.player.PlayerProfile;
 import com.gmail.nossr50.datatypes.skills.PrimarySkillType;
 import com.gmail.nossr50.locale.LocaleLoader;
 import com.gmail.nossr50.mcMMO;
+import com.gmail.nossr50.mcrpg.specialization.SpecializationDisplay;
 import com.gmail.nossr50.util.Permissions;
 import com.gmail.nossr50.util.commands.CommandUtils;
 import com.gmail.nossr50.util.player.UserManager;
@@ -56,20 +57,8 @@ public class InspectCommand implements TabExecutor {
 
                 sender.sendMessage(LocaleLoader.getString("Inspect.OfflineStats", playerName));
 
-                sender.sendMessage(LocaleLoader.getString("Stats.Header.Gathering"));
-                for (PrimarySkillType skill : mcMMO.p.getSkillTools().GATHERING_SKILLS) {
-                    sender.sendMessage(CommandUtils.displaySkill(profile, skill));
-                }
-
-                sender.sendMessage(LocaleLoader.getString("Stats.Header.Combat"));
-                for (PrimarySkillType skill : mcMMO.p.getSkillTools().COMBAT_SKILLS) {
-                    sender.sendMessage(CommandUtils.displaySkill(profile, skill));
-                }
-
-                sender.sendMessage(LocaleLoader.getString("Stats.Header.Misc"));
-                for (PrimarySkillType skill : mcMMO.p.getSkillTools().MISC_SKILLS) {
-                    sender.sendMessage(CommandUtils.displaySkill(profile, skill));
-                }
+                // mcRPG: specialization summary and mcRPG's four skill categories
+                SpecializationDisplay.sendSkillsByCategory(sender, profile, null);
 
                 // Sum power level
                 int powerLevel = 0;
@@ -112,9 +101,9 @@ public class InspectCommand implements TabExecutor {
                     sender.sendMessage(LocaleLoader.getString("Inspect.Stats", target.getName()));
                 }
 
-                CommandUtils.printGatheringSkills(target, sender);
-                CommandUtils.printCombatSkills(target, sender);
-                CommandUtils.printMiscSkills(target, sender);
+                // mcRPG: specialization summary and mcRPG's four skill categories
+                SpecializationDisplay.sendSkillsByCategory(sender, mmoPlayer.getProfile(),
+                        target);
 
                 sender.sendMessage(
                         LocaleLoader.getString("Commands.PowerLevel", mmoPlayer.getPowerLevel()));

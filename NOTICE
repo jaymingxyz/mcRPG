@@ -1,0 +1,20 @@
+mcRPG
+Copyright (C) 2026 the mcRPG contributors
+
+mcRPG is a modified version of mcMMO (https://github.com/mcMMO-Dev/mcMMO),
+created by nossr50 and developed by the mcMMO contributors.
+
+mcRPG and mcMMO are licensed under the GNU General Public License, version 3.
+See the LICENSE file for the full license text.
+
+Modification notice (GPLv3, section 5a):
+This work is a modified version of mcMMO's development branch (master). It was
+first based on mcMMO 2.3.002-SNAPSHOT (commit 6fcbefe87, 2026-09-22), and it
+regularly merges in later mcMMO updates. Modifications began on 2026-09-23. The
+git history records every modification and its date.
+
+mcRPG is not affiliated with or endorsed by the mcMMO project.
+
+Some files contain their own copyright notices (for example, code from
+SpoutDev in util/blockmeta/McMMOSimpleRegionFile.java). Those notices are
+kept unchanged.

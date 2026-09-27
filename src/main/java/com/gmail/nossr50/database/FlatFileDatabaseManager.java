@@ -11,6 +11,7 @@ import com.gmail.nossr50.datatypes.player.UniqueDataType;
 import com.gmail.nossr50.datatypes.skills.PrimarySkillType;
 import com.gmail.nossr50.datatypes.skills.SuperAbilityType;
 import com.gmail.nossr50.mcMMO;
+import com.gmail.nossr50.mcrpg.specialization.SpecializationSlot;
 import com.gmail.nossr50.util.LogUtils;
 import com.gmail.nossr50.util.Misc;
 import com.gmail.nossr50.util.skills.SkillTools;
@@ -27,6 +28,7 @@ import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
@@ -129,9 +131,20 @@ public final class FlatFileDatabaseManager implements DatabaseManager {
     public static final int EXP_SPEARS = 55;
     public static final int SKILLS_SPEARS = 56;
     public static final int COOLDOWN_SPEARS = 57;
+    // mcRPG: Salvage and Smelting are standalone skills with their own stored level and XP.
+    // These positions must never change once servers have data, so fields that later mcMMO
+    // updates add go after mcRPG's fields.
+    public static final int EXP_SALVAGE = 58;
+    public static final int SKILLS_SALVAGE = 59;
+    public static final int EXP_SMELTING = 60;
+    public static final int SKILLS_SMELTING = 61;
+    // mcRPG: specialization slots, stored as a skill name, or NONE for an empty slot
+    public static final int PRIMARY_SKILL = 62;
+    public static final int SECONDARY_SKILL = 63;
+    public static final String EMPTY_SPECIALIZATION = "NONE";
 
     // Update this everytime new data is added
-    public static final int DATA_ENTRY_COUNT = COOLDOWN_SPEARS + 1;
+    public static final int DATA_ENTRY_COUNT = SECONDARY_SKILL + 1;
 
     // Maps for cleaner parsing of skills / XP / cooldowns
     private record SkillIndex(PrimarySkillType type, int index) {}
@@ -155,7 +168,9 @@ public final class FlatFileDatabaseManager implements DatabaseManager {
             new SkillIndex(PrimarySkillType.CROSSBOWS, SKILLS_CROSSBOWS),
             new SkillIndex(PrimarySkillType.TRIDENTS, SKILLS_TRIDENTS),
             new SkillIndex(PrimarySkillType.MACES, SKILLS_MACES),
-            new SkillIndex(PrimarySkillType.SPEARS, SKILLS_SPEARS)
+            new SkillIndex(PrimarySkillType.SPEARS, SKILLS_SPEARS),
+            new SkillIndex(PrimarySkillType.SALVAGE, SKILLS_SALVAGE),
+            new SkillIndex(PrimarySkillType.SMELTING, SKILLS_SMELTING)
     );
 
     // All skill XP columns
@@ -176,7 +191,9 @@ public final class FlatFileDatabaseManager implements DatabaseManager {
             new SkillIndex(PrimarySkillType.CROSSBOWS, EXP_CROSSBOWS),
             new SkillIndex(PrimarySkillType.TRIDENTS, EXP_TRIDENTS),
             new SkillIndex(PrimarySkillType.MACES, EXP_MACES),
-            new SkillIndex(PrimarySkillType.SPEARS, EXP_SPEARS)
+            new SkillIndex(PrimarySkillType.SPEARS, EXP_SPEARS),
+            new SkillIndex(PrimarySkillType.SALVAGE, EXP_SALVAGE),
+            new SkillIndex(PrimarySkillType.SMELTING, EXP_SMELTING)
     );
 
     // All ability cooldown columns
@@ -446,7 +463,7 @@ public final class FlatFileDatabaseManager implements DatabaseManager {
     private boolean logCorruptOnce(boolean alreadyLogged) {
         if (!alreadyLogged) {
             logger.severe(
-                    "mcMMO found some unexpected or corrupted data in mcmmo.users and is removing it, it is possible some data has been lost.");
+                    "mcMMO found some unexpected or corrupted data in mcrpg.users and is removing it, it is possible some data has been lost.");
         }
         return true;
     }
@@ -539,6 +556,18 @@ public final class FlatFileDatabaseManager implements DatabaseManager {
         appendInt(out, profile.getSkillXpLevel(PrimarySkillType.SPEARS));
         appendInt(out, profile.getSkillLevel(PrimarySkillType.SPEARS));
         appendLong(out, profile.getAbilityDATS(SuperAbilityType.SPEARS_SUPER_ABILITY));
+
+        // mcRPG: SALVAGE / SMELTING XP + levels (standalone skills, not child skills)
+        appendInt(out, profile.getSkillXpLevel(PrimarySkillType.SALVAGE));
+        appendInt(out, profile.getSkillLevel(PrimarySkillType.SALVAGE));
+        appendInt(out, profile.getSkillXpLevel(PrimarySkillType.SMELTING));
+        appendInt(out, profile.getSkillLevel(PrimarySkillType.SMELTING));
+
+        // mcRPG: specialization slots
+        appendString(out, specializationToField(
+                profile.getSpecialization(SpecializationSlot.PRIMARY)));
+        appendString(out, specializationToField(
+                profile.getSpecialization(SpecializationSlot.SECONDARY)));
 
         out.append(LINE_ENDING);
     }
@@ -1254,8 +1283,39 @@ public final class FlatFileDatabaseManager implements DatabaseManager {
             lastLogin = -1;
         }
 
-        return new PlayerProfile(username, uuid, skills, skillsXp, skillsDATS, scoreboardTipsShown,
-                uniquePlayerDataMap, lastLogin);
+        final PlayerProfile profile = new PlayerProfile(username, uuid, skills, skillsXp,
+                skillsDATS, scoreboardTipsShown, uniquePlayerDataMap, lastLogin);
+        // mcRPG: specialization slots (missing on rows written before they existed)
+        profile.loadSpecialization(
+                specializationFromField(character, PRIMARY_SKILL),
+                specializationFromField(character, SECONDARY_SKILL));
+        return profile;
+    }
+
+    /* mcRPG: specialization slot fields */
+
+    static @NotNull String specializationToField(@Nullable PrimarySkillType skill) {
+        return skill == null ? EMPTY_SPECIALIZATION : skill.name();
+    }
+
+    /**
+     * Reads a specialization slot field. Missing fields, NONE, and anything that isn't a
+     * skill name all mean an empty slot.
+     */
+    static @Nullable PrimarySkillType specializationFromField(@NotNull String[] character,
+            int index) {
+        if (index >= character.length || character[index] == null) {
+            return null;
+        }
+        final String value = character[index].trim();
+        if (value.isEmpty() || value.equalsIgnoreCase(EMPTY_SPECIALIZATION)) {
+            return null;
+        }
+        try {
+            return PrimarySkillType.valueOf(value.toUpperCase(Locale.ROOT));
+        } catch (IllegalArgumentException ignored) {
+            return null;
+        }
     }
 
     private void tryLoadSkillCooldownFromRawData(

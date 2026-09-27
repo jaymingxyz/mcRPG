@@ -6,6 +6,7 @@ import com.gmail.nossr50.datatypes.player.PlayerProfile;
 import com.gmail.nossr50.datatypes.skills.PrimarySkillType;
 import com.gmail.nossr50.locale.LocaleLoader;
 import com.gmail.nossr50.mcMMO;
+import com.gmail.nossr50.mcrpg.specialization.Specialization;
 import com.gmail.nossr50.util.EventUtils;
 import com.gmail.nossr50.util.Permissions;
 import com.gmail.nossr50.util.commands.CommandUtils;
@@ -127,6 +128,8 @@ public class SkillresetCommand implements TabExecutor {
         float xpRemoved = profile.getSkillXpLevelRaw(skill);
 
         profile.modifySkill(skill, 0);
+        // mcRPG: a reset skill also leaves the player's Primary or Secondary slot
+        Specialization.clearSlotHolding(profile, skill);
 
         if (player == null) {
             profile.scheduleAsyncSave();

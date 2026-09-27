@@ -289,7 +289,7 @@ public class TextComponentFactory {
             return Component.text()
                     .append(LocaleLoader.getTextComponent("JSON.Hover.Mystery",
                             String.valueOf(RankUtils.getUnlockLevel(subSkillType))))
-                    .clickEvent(ClickEvent.runCommand("/mmoinfo ???"));
+                    .clickEvent(ClickEvent.runCommand("/rpginfo ???"));
         }
 
         final String localeKey = isMaxRank(player, subSkillType)
@@ -299,7 +299,7 @@ public class TextComponentFactory {
         return Component.text()
                 .append(LocaleLoader.getTextComponent(localeKey, skillName))
                 .clickEvent(ClickEvent.runCommand(
-                        "/mmoinfo " + subSkillType.getNiceNameNoSpaces(subSkillType)));
+                        "/rpginfo " + subSkillType.getNiceNameNoSpaces(subSkillType)));
     }
 
     // ---------------------------------------------------------------------------

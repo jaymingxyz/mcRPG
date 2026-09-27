@@ -49,24 +49,20 @@ class PlayerProfileTest extends MMOTestEnvironment {
     }
 
     /**
-     * Regression coverage for adding levels to a child skill: child skills have no level entry
-     * of their own, and the read-then-modify in addLevels crashed on the missing entry before
-     * the child guard in modifySkill could run. Child levels split across the parents instead,
-     * matching how child XP and the offline ExperienceAPI variants behave.
+     * mcRPG: Salvage and Smelting are standalone skills with their own level entry. Levels
+     * added to Smelting stay on Smelting instead of being split across Mining and Repair, as
+     * they were in mcMMO when Smelting was a child skill.
      */
     @Test
-    void addLevelsShouldSplitChildSkillLevelsAcrossParents() {
-        // Given - the child skill Smelting with its two parents at the starting level
-        final var parents = mcMMO.p.getSkillTools()
-                .getChildSkillParents(PrimarySkillType.SMELTING);
-
-        // When - levels are added to the child skill
+    void addLevelsShouldRaiseSmeltingItselfWithoutTouchingOtherSkills() {
+        // When - levels are added to Smelting
         profile.addLevels(PrimarySkillType.SMELTING, 4);
 
-        // Then - each parent receives an equal share
-        for (final PrimarySkillType parent : parents) {
-            assertThat(profile.getSkillLevel(parent)).isEqualTo(STARTING_LEVEL + 2);
-        }
+        // Then - Smelting gets all of them, and its former parent skills are unchanged
+        assertThat(profile.getSkillLevel(PrimarySkillType.SMELTING))
+                .isEqualTo(STARTING_LEVEL + 4);
+        assertThat(profile.getSkillLevel(PrimarySkillType.MINING)).isEqualTo(STARTING_LEVEL);
+        assertThat(profile.getSkillLevel(PrimarySkillType.REPAIR)).isEqualTo(STARTING_LEVEL);
     }
 
     /**
@@ -122,30 +118,24 @@ class PlayerProfileTest extends MMOTestEnvironment {
     }
 
     @Test
-    void addXpShouldSplitChildSkillXpAcrossParents() {
-        // Given - the child skill Smelting with its two parents at zero XP
-        final var parents = mcMMO.p.getSkillTools()
-                .getChildSkillParents(PrimarySkillType.SMELTING);
+    void addXpShouldGoToSalvageAndSmeltingThemselves() {
+        // When - XP is added to Salvage and Smelting (mcRPG standalone skills)
+        profile.addXp(PrimarySkillType.SALVAGE, 10F);
+        profile.addXp(PrimarySkillType.SMELTING, 20F);
 
-        // When - XP is added to the child skill
-        profile.addXp(PrimarySkillType.SMELTING, 10F);
-
-        // Then - each parent receives an equal share
-        for (final PrimarySkillType parent : parents) {
-            assertThat(profile.getSkillXpLevelRaw(parent)).isEqualTo(5F);
-        }
+        // Then - each keeps its own XP, and their former parent skills gain nothing
+        assertThat(profile.getSkillXpLevelRaw(PrimarySkillType.SALVAGE)).isEqualTo(10F);
+        assertThat(profile.getSkillXpLevelRaw(PrimarySkillType.SMELTING)).isEqualTo(20F);
+        assertThat(profile.getSkillXpLevelRaw(PrimarySkillType.MINING)).isZero();
+        assertThat(profile.getSkillXpLevelRaw(PrimarySkillType.REPAIR)).isZero();
+        assertThat(profile.getSkillXpLevelRaw(PrimarySkillType.FISHING)).isZero();
     }
 
-    /**
-     * Regression coverage for reading raw XP on a child skill: child skills store no XP of
-     * their own and the raw read crashed on the missing entry. Other plugins can reach this
-     * through the profile API; zero matches what the non-raw XP read reports.
-     */
     @Test
-    void getSkillXpLevelRawShouldReturnZeroForChildSkills() {
-        // Given - a child skill, which stores no XP of its own
+    void getSkillXpLevelRawShouldReturnZeroForAFreshSmeltingSkill() {
+        // Given - a new profile, where Smelting has its own XP entry starting at zero
         // When - the raw XP is read
-        // Then - zero is returned instead of an error
+        // Then - zero is returned
         assertThat(profile.getSkillXpLevelRaw(PrimarySkillType.SMELTING)).isZero();
     }
 

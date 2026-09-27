@@ -16,7 +16,7 @@ import com.gmail.nossr50.util.text.StringUtils;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
-@CommandPermission("mcmmo.chat.partychat")
+@CommandPermission("mcrpg.chat.partychat")
 @CommandAlias("pc|p|partychat|pchat") //Kept for historical reasons
 public class PartyChatCommand extends BaseCommand {
     private final @NotNull mcMMO pluginRef;

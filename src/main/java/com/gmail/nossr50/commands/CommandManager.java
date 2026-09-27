@@ -112,7 +112,7 @@ public class CommandManager {
                 validateLoadedData(bukkitCommandIssuer.getPlayer());
                 validatePlayerParty(bukkitCommandIssuer.getPlayer());
                 //TODO: Is there even a point in validating permission? look into this later
-                validatePermission("mcmmo.chat.partychat", bukkitCommandIssuer.getPlayer());
+                validatePermission("mcrpg.chat.partychat", bukkitCommandIssuer.getPlayer());
             }
         });
     }

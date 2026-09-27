@@ -510,10 +510,10 @@ public class SkillTools {
     }
 
     public static boolean isChildSkill(PrimarySkillType primarySkillType) {
-        return switch (primarySkillType) {
-            case SALVAGE, SMELTING -> true;
-            default -> false;
-        };
+        // mcRPG has no child skills. Salvage and Smelting level from their own XP instead of
+        // averaging parent skills. Returning false here turns off every child-skill code path
+        // in mcMMO, and makes NON_CHILD_SKILLS contain all skills.
+        return false;
     }
 
     /**

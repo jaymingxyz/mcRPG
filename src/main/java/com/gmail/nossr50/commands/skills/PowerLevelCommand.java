@@ -14,8 +14,8 @@ import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
-@CommandPermission("mcmmo.commands.mmopower")
-@CommandAlias("mmopower|mmopowerlevel|powerlevel")
+@CommandPermission("mcrpg.commands.power")
+@CommandAlias("rpgpower|powerlevel") // mcRPG: was mmopower|mmopowerlevel|powerlevel
 public class PowerLevelCommand extends BaseCommand {
     private final @NotNull mcMMO pluginRef;
 

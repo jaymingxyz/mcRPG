@@ -366,6 +366,10 @@ public abstract class MMOTestEnvironment {
         when(experienceConfigInstance.getExponent(any())).thenReturn(1D);
         when(experienceConfigInstance.getExperienceGainsGlobalMultiplier())
                 .thenReturn(1D);
+        // mcRPG: neutral specialization multipliers, so XP amounts in tests are unchanged
+        // unless a test sets specific multipliers
+        when(experienceConfigInstance.getSpecializationMultiplier(any()))
+                .thenReturn(1D);
         when(experienceConfigInstance.getMultiplier(any(FormulaType.class)))
                 .thenReturn(1D);
         // Conversion

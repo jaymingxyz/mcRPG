@@ -516,23 +516,22 @@ class XprateCommandTest extends MMOTestEnvironment {
     }
 
     /**
-     * Gotcha coverage: child skills have no XP of their own, so a per-skill rate for them must
-     * be rejected before touching any multiplier.
+     * mcRPG: Salvage and Smelting earn their own XP, so a per-skill rate applies to them like
+     * any other skill. (mcRPG does not register /xprate, but the class is kept so merges from
+     * mcMMO stay simple.)
      */
     @ParameterizedTest
     @ValueSource(strings = {"smelting", "salvage"})
-    void onCommandShouldRejectChildSkills(String childSkill) {
+    void onCommandShouldSetSkillRateForSalvageAndSmelting(String skillArgument) {
         // Given - a sender with permission to change rates
 
-        // When - the sender targets a child skill
-        final boolean handled = runCommand(childSkill, "2");
+        // When - the sender sets a quiet per-skill rate for Salvage or Smelting
+        final boolean handled = runCommand(skillArgument, "2", "false");
 
-        // Then - the sender is told child skills are unsupported and nothing changes
+        // Then - the rate reaches that skill like any other
         assertThat(handled).isTrue();
-        verify(sender, atLeastOnce()).sendMessage(anyString());
-        verify(ExperienceConfig.getInstance(), never())
-                .setExperienceGainsSkillMultiplier(any(PrimarySkillType.class), anyDouble());
-        verify(mcMMO.p, never()).setXPEventEnabled(anyBoolean());
+        verify(ExperienceConfig.getInstance()).setExperienceGainsSkillMultiplier(
+                PrimarySkillType.valueOf(skillArgument.toUpperCase(java.util.Locale.ROOT)), 2.0);
     }
 
     @Test

@@ -743,53 +743,53 @@ public class BlockListener implements Listener {
         if (mmoPlayer.isDebugMode()) {
             if (mcMMO.getUserBlockTracker().isIneligible(blockState)) {
                 player.sendMessage(
-                        "[mcMMO DEBUG] This block is not natural and does not reward treasures/XP");
+                        "[mcRPG DEBUG] This block is not natural and does not reward treasures/XP");
             } else {
-                player.sendMessage("[mcMMO DEBUG] This block is considered natural by mcMMO");
+                player.sendMessage("[mcRPG DEBUG] This block is considered natural by mcRPG");
                 mmoPlayer.getExcavationManager().printExcavationDebug(player, block);
             }
 
             if (WorldGuardUtils.isWorldGuardLoaded()) {
                 if (WorldGuardManager.getInstance().hasMainFlag(player)) {
                     player.sendMessage(
-                            "[mcMMO DEBUG] World Guard main flag is permitted for this player in this region");
+                            "[mcRPG DEBUG] World Guard main flag is permitted for this player in this region");
                 } else {
                     player.sendMessage(
-                            "[mcMMO DEBUG] World Guard main flag is DENIED for this player in this region");
+                            "[mcRPG DEBUG] World Guard main flag is DENIED for this player in this region");
                 }
 
                 if (WorldGuardManager.getInstance().hasXPFlag(player)) {
                     player.sendMessage(
-                            "[mcMMO DEBUG] World Guard xp flag is permitted for this player in this region");
+                            "[mcRPG DEBUG] World Guard xp flag is permitted for this player in this region");
                 } else {
                     player.sendMessage(
-                            "[mcMMO DEBUG] World Guard xp flag is not permitted for this player in this region");
+                            "[mcRPG DEBUG] World Guard xp flag is not permitted for this player in this region");
                 }
             }
 
             if (blockState instanceof Furnace || blockState instanceof BrewingStand) {
                 if (ContainerMetadataUtils.isContainerOwned(blockState)) {
-                    player.sendMessage("[mcMMO DEBUG] This container has a registered owner");
+                    player.sendMessage("[mcRPG DEBUG] This container has a registered owner");
                     final OfflinePlayer furnacePlayer = ContainerMetadataUtils.getContainerOwner(
                             blockState);
                     if (furnacePlayer != null) {
-                        player.sendMessage("[mcMMO DEBUG] This container is owned by player "
+                        player.sendMessage("[mcRPG DEBUG] This container is owned by player "
                                 + furnacePlayer.getName());
                     }
                 } else {
                     player.sendMessage(
-                            "[mcMMO DEBUG] This container does not have a registered owner");
+                            "[mcRPG DEBUG] This container does not have a registered owner");
                 }
             }
 
             if (ExperienceConfig.getInstance().isExperienceBarsEnabled()) {
                 player.sendMessage(
-                        "[mcMMO DEBUG] XP bars are enabled, however you should check per-skill settings to make sure those are enabled.");
+                        "[mcRPG DEBUG] XP bars are enabled, however you should check per-skill settings to make sure those are enabled.");
             }
 
             player.sendMessage(
                     ChatColor.RED + "You can turn this debug info off by typing " + ChatColor.GOLD
-                            + "/mmodebug");
+                            + "/rpgdebug");
         }
     }
 

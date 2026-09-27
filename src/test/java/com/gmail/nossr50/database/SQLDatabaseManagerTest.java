@@ -1,6 +1,7 @@
 package com.gmail.nossr50.database;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -294,6 +295,40 @@ class SQLDatabaseManagerTest {
     // Saving skill levels / XP
     // ------------------------------------------------------------------------
 
+    @ParameterizedTest(name = "{0} - saveUser persists mcRPG specialization slots")
+    @MethodSource("dbFlavors")
+    void whenSavingSpecializationSlotsShouldPersistToDatabase(DbFlavor flavor) {
+        // GIVEN a new user with a Primary skill and an empty Secondary slot
+        SQLDatabaseManager databaseManager = createManagerFor(flavor);
+        Player player = Mockito.mock(Player.class);
+        UUID playerUuid = UUID.randomUUID();
+        String playerName = "mcrpg_slots_" + flavor.name().toLowerCase();
+
+        when(player.getUniqueId()).thenReturn(playerUuid);
+        when(player.getName()).thenReturn(playerName);
+
+        try {
+            PlayerProfile playerProfile = databaseManager.newUser(player);
+            playerProfile.setSpecialization(
+                    com.gmail.nossr50.mcrpg.specialization.SpecializationSlot.PRIMARY,
+                    PrimarySkillType.MINING);
+
+            // WHEN it is saved and loaded again
+            assertThat(databaseManager.saveUser(playerProfile)).isTrue();
+            PlayerProfile retrievedUser = databaseManager.loadPlayerProfile(player.getName());
+
+            // THEN the Primary slot is kept and the empty Secondary slot stays empty
+            assertThat(retrievedUser.getSpecialization(
+                    com.gmail.nossr50.mcrpg.specialization.SpecializationSlot.PRIMARY))
+                    .isEqualTo(PrimarySkillType.MINING);
+            assertThat(retrievedUser.getSpecialization(
+                    com.gmail.nossr50.mcrpg.specialization.SpecializationSlot.SECONDARY))
+                    .isNull();
+        } finally {
+            databaseManager.onDisable();
+        }
+    }
+
     @ParameterizedTest(name = "{0} - saveUser persists skill level values")
     @MethodSource("dbFlavors")
     void whenSavingSkillLevelValuesShouldPersistToDatabase(DbFlavor flavor) {
@@ -326,14 +361,10 @@ class SQLDatabaseManagerTest {
             // THEN save should succeed
             assertThat(saveSucceeded).isTrue();
 
-            // AND the retrieved user should have matching levels (except child skills)
+            // AND the retrieved user should have matching levels for every skill (mcRPG stores
+            // Salvage and Smelting like any other skill)
             PlayerProfile retrievedUser = databaseManager.loadPlayerProfile(player.getName());
             for (PrimarySkillType primarySkillType : PrimarySkillType.values()) {
-                if (primarySkillType == PrimarySkillType.SALVAGE
-                        || primarySkillType == PrimarySkillType.SMELTING) {
-                    continue;
-                }
-
                 assertThat(retrievedUser.getSkillLevel(primarySkillType))
                         .as("Saved level for %s", primarySkillType)
                         .isEqualTo(1 + primarySkillType.ordinal());
@@ -375,14 +406,10 @@ class SQLDatabaseManagerTest {
             // THEN save should succeed
             assertThat(saveSucceeded).isTrue();
 
-            // AND the retrieved user should have matching XP (except child skills)
+            // AND the retrieved user should have matching XP for every skill (mcRPG stores
+            // Salvage and Smelting like any other skill)
             PlayerProfile retrievedUser = databaseManager.loadPlayerProfile(player.getName());
             for (PrimarySkillType primarySkillType : PrimarySkillType.values()) {
-                if (primarySkillType == PrimarySkillType.SALVAGE
-                        || primarySkillType == PrimarySkillType.SMELTING) {
-                    continue;
-                }
-
                 assertThat(retrievedUser.getSkillXpLevel(primarySkillType))
                         .as("Saved XP for %s", primarySkillType)
                         .isEqualTo(1 + primarySkillType.ordinal());
@@ -1245,17 +1272,19 @@ class SQLDatabaseManagerTest {
         databaseManager.onDisable();
     }
 
-    @ParameterizedTest(name = "{0} - readLeaderboard(child skill) throws InvalidSkillException")
+    @ParameterizedTest(name = "{0} - readLeaderboard(Salvage/Smelting) works like any skill")
     @MethodSource("dbFlavors")
-    void whenReadingLeaderboardForChildSkillShouldThrowInvalidSkillException(DbFlavor flavor) {
+    void whenReadingLeaderboardForSalvageOrSmeltingShouldNotThrow(DbFlavor flavor) {
         // GIVEN
         SQLDatabaseManager databaseManager = createManagerFor(flavor);
 
-        // WHEN / THEN
-        assertThatThrownBy(() ->
+        // WHEN / THEN - mcRPG's Salvage and Smelting have their own leaderboards
+        assertThatCode(() ->
                 databaseManager.readLeaderboard(PrimarySkillType.SALVAGE, 1, 10))
-                .isInstanceOf(InvalidSkillException.class)
-                .hasMessageContaining("child skills do not have leaderboards");
+                .doesNotThrowAnyException();
+        assertThatCode(() ->
+                databaseManager.readLeaderboard(PrimarySkillType.SMELTING, 1, 10))
+                .doesNotThrowAnyException();
 
         databaseManager.onDisable();
     }
@@ -1312,7 +1341,7 @@ class SQLDatabaseManagerTest {
         assertThat(columns).containsExactlyInAnyOrder(
                 "taming", "mining", "woodcutting", "repair", "unarmed", "herbalism", "excavation",
                 "archery", "swords", "axes", "acrobatics", "fishing", "alchemy", "crossbows",
-                "tridents", "maces", "spears", "total");
+                "tridents", "maces", "spears", "salvage", "smelting", "total");
     }
 
     @ParameterizedTest(name = "{0} - fresh install creates a leaderboard index on every skill column")

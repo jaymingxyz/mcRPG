@@ -24,6 +24,7 @@ import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.TestInstance.Lifecycle;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
@@ -86,7 +87,8 @@ class ScoreboardManagerTest {
     }
 
     /**
-     * Every (child skill, parent skill) pairing defined by {@link SkillTools}.
+     * Every (child skill, parent skill) pairing mcMMO used. In mcRPG, Salvage and Smelting are
+     * standalone skills, so these pairs are no longer related.
      */
     private static Stream<Arguments> childBoardParentSkillPairs() {
         return Stream.of(
@@ -112,31 +114,47 @@ class ScoreboardManagerTest {
 
     @ParameterizedTest
     @MethodSource("childBoardParentSkillPairs")
-    void handleXpShouldRefreshChildSkillBoardWhenParentSkillGainsXp(
-            final PrimarySkillType childSkill, final PrimarySkillType parentSkill) {
-        // Given - a player keeps a child-skill sidebar (e.g. /salvage then /mcsb keep) visible
+    void handleXpShouldNotRefreshSalvageOrSmeltingBoardWhenFormerParentSkillGainsXp(
+            final PrimarySkillType formerChildSkill, final PrimarySkillType formerParentSkill) {
+        // Given - a player keeps a Salvage or Smelting sidebar (e.g. /salvage then /mcsb keep)
+        // visible
         final Player player = mockPlayer();
-        final ScoreboardWrapper wrapper = registerShownSkillBoard(childSkill);
+        final ScoreboardWrapper wrapper = registerShownSkillBoard(formerChildSkill);
 
-        // When - the player earns XP in one of the child skill's parent skills
-        ScoreboardManager.handleXp(player, parentSkill);
+        // When - the player earns XP in a skill that was its parent in mcMMO
+        ScoreboardManager.handleXp(player, formerParentSkill);
 
-        // Then - the child-skill sidebar schedules a refresh
-        verify(wrapper).doSidebarUpdateSoon();
+        // Then - no refresh is scheduled; mcRPG's Salvage and Smelting don't depend on it
+        verify(wrapper, never()).doSidebarUpdateSoon();
     }
 
     @ParameterizedTest
     @MethodSource("childBoardParentSkillPairs")
-    void handleLevelUpShouldRefreshChildSkillBoardWhenParentSkillLevelsUp(
-            final PrimarySkillType childSkill, final PrimarySkillType parentSkill) {
-        // Given - a player keeps a child-skill sidebar visible
+    void handleLevelUpShouldNotRefreshSalvageOrSmeltingBoardWhenFormerParentSkillLevelsUp(
+            final PrimarySkillType formerChildSkill, final PrimarySkillType formerParentSkill) {
+        // Given - a player keeps a Salvage or Smelting sidebar visible
         final Player player = mockPlayer();
-        final ScoreboardWrapper wrapper = registerShownSkillBoard(childSkill);
+        final ScoreboardWrapper wrapper = registerShownSkillBoard(formerChildSkill);
 
-        // When - the player levels up one of the child skill's parent skills
-        ScoreboardManager.handleLevelUp(player, parentSkill);
+        // When - the player levels up a skill that was its parent in mcMMO
+        ScoreboardManager.handleLevelUp(player, formerParentSkill);
 
-        // Then - the child-skill sidebar schedules a refresh (its derived level just changed)
+        // Then - no refresh is scheduled
+        verify(wrapper, never()).doSidebarUpdateSoon();
+    }
+
+    @ParameterizedTest
+    @EnumSource(value = PrimarySkillType.class, names = {"SALVAGE", "SMELTING"})
+    void handleXpShouldRefreshSalvageAndSmeltingBoardsWhenTheyGainXp(
+            final PrimarySkillType skill) {
+        // Given - a player keeps a Salvage or Smelting sidebar visible
+        final Player player = mockPlayer();
+        final ScoreboardWrapper wrapper = registerShownSkillBoard(skill);
+
+        // When - the player earns XP in that skill, which mcRPG lets them do directly
+        ScoreboardManager.handleXp(player, skill);
+
+        // Then - the sidebar schedules a refresh, like any other skill's board
         verify(wrapper).doSidebarUpdateSoon();
     }
 

@@ -4,6 +4,7 @@ import com.gmail.nossr50.datatypes.skills.PrimarySkillType;
 import com.gmail.nossr50.datatypes.skills.SubSkillType;
 import com.gmail.nossr50.locale.LocaleLoader;
 import com.gmail.nossr50.mcMMO;
+import com.gmail.nossr50.mcrpg.salvage.SalvageMastery;
 import com.gmail.nossr50.skills.salvage.SalvageManager;
 import com.gmail.nossr50.util.Permissions;
 import com.gmail.nossr50.util.skills.RankUtils;
@@ -45,6 +46,9 @@ public class SalvageCommand extends SkillCommand {
                     SubSkillType.SALVAGE_SCRAP_COLLECTOR,
                     String.valueOf(SalvageManager.getSalvageLimit(player)),
                     RankUtils.getHighestRankStr(SubSkillType.SALVAGE_SCRAP_COLLECTOR)));
+            // mcRPG: Salvage Mastery
+            messages.add(LocaleLoader.getString("mcRPG.Salvage.Mastery.Stat",
+                    percent.format(SalvageMastery.recoveredShare((int) skillValue))));
         }
 
         if (canArcaneSalvage) {

@@ -30,7 +30,6 @@ public final class Motd {
         final PluginDescriptionFile pluginDescription = mcMMO.p.getDescription();
         displayVersion(player, pluginDescription.getVersion());
         displayHardcoreSettings(player);
-        displayXpPerks(player);
         displayCooldownPerks(player);
         displayActivationPerks(player);
         displayLuckyPerks(player);

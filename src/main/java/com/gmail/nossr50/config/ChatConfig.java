@@ -1,15 +1,17 @@
 package com.gmail.nossr50.config;
 
 import com.gmail.nossr50.datatypes.chat.ChatChannel;
-import com.gmail.nossr50.util.text.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
-public class ChatConfig extends BukkitConfig {
+/**
+ * mcRPG has no chat channels (admin chat, party chat or chat spying). This class keeps mcMMO's
+ * chat checks compiling, and every one of them sees chat as disabled. No chat.yml is created,
+ * because there is nothing to configure.
+ */
+public class ChatConfig {
     private static ChatConfig instance;
 
     private ChatConfig() {
-        super("chat.yml");
-        validate();
     }
 
     public static ChatConfig getInstance() {
@@ -20,24 +22,12 @@ public class ChatConfig extends BukkitConfig {
         return instance;
     }
 
-    @Override
-    protected void loadKeys() {
-        //Sigh this old config system...
-    }
-
-    @Override
-    protected boolean validateKeys() {
-        return true;
-    }
-
     public boolean isChatEnabled() {
-        return config.getBoolean("Chat.Enable", true);
+        return false;
     }
 
     public boolean isChatChannelEnabled(@NotNull ChatChannel chatChannel) {
-        String key =
-                "Chat.Channels." + StringUtils.getCapitalized(chatChannel.toString()) + ".Enable";
-        return config.getBoolean(key, true);
+        return false;
     }
 
     /**
@@ -47,20 +37,14 @@ public class ChatConfig extends BukkitConfig {
      * @return true if display names should be used
      */
     public boolean useDisplayNames(@NotNull ChatChannel chatChannel) {
-        String key = "Chat.Channels." + StringUtils.getCapitalized(chatChannel.toString())
-                + ".Use_Display_Names";
-        return config.getBoolean(key, true);
+        return true;
     }
 
     public boolean isConsoleIncludedInAudience(@NotNull ChatChannel chatChannel) {
-        String key = "Chat.Channels." + StringUtils.getCapitalized(chatChannel.toString())
-                + ".Send_To_Console";
-        return config.getBoolean(key, true);
+        return false;
     }
-
 
     public boolean isSpyingAutomatic() {
-        return config.getBoolean("Chat.Channels.Party.Spies.Automatically_Enable_Spying", false);
+        return false;
     }
-
 }

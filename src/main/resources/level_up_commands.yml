@@ -1,4 +1,4 @@
-# Runs server commands when players reach chosen levels in mcMMO skills.
+# Runs server commands when players reach chosen levels in mcRPG skills.
 #
 # Each entry under level_up_commands needs commands and at least one trigger:
 #     skills + levels     Fires when any listed skill reaches any listed level.
@@ -27,7 +27,7 @@
 # When PlaceholderAPI is installed, its placeholders (like %player_world%) are also
 # resolved against the player who leveled up.
 #
-# Command text is passed to the server as-is; mcMMO does not translate color codes.
+# Command text is passed to the server as-is; mcRPG does not translate color codes.
 # Whether colors render is up to the command being run, for example tellraw supports
 # colors while plain say does not.
 #
@@ -75,7 +75,7 @@ level_up_commands:
         power_levels: [ 750 ]
         commands:
             - "say {@player} reached a combat milestone! Swords: {@swords_level}, Axes: {@axes_level}, power level: {@power_level}"
-    # PlaceholderAPI placeholders resolve when PlaceholderAPI is installed; mcMMO's own
+    # PlaceholderAPI placeholders resolve when PlaceholderAPI is installed; mcRPG's own
     # placeholders (like the leaderboard position below) work out of the box, others may
     # need their expansion downloaded (%player_world% comes from PAPI's Player expansion)
     papi_examples:
@@ -84,7 +84,7 @@ level_up_commands:
         levels: [ 500 ]
         commands:
             - "say {@player} hit {@skill} {@level} while exploring %player_world%!"
-            - "say {@player} is now position %mcmmo_rank_mining% on the Mining leaderboard!"
+            - "say {@player} is now position %mcrpg_rank_mining% on the Mining leaderboard!"
     # Rich chat messages work through vanilla tellraw: colored text plus extra detail shown
     # when hovering the message. Minecraft versions before 1.21.5 use the older
     # 'hoverEvent'/'contents' JSON keys instead of 'hover_event'/'value'.

@@ -6,7 +6,8 @@ import com.gmail.nossr50.datatypes.party.Party;
 import com.gmail.nossr50.datatypes.player.McMMOPlayer;
 import com.gmail.nossr50.datatypes.skills.PrimarySkillType;
 import com.gmail.nossr50.mcMMO;
-import com.gmail.nossr50.util.Permissions;
+import com.gmail.nossr50.mcrpg.specialization.Specialization;
+import com.gmail.nossr50.mcrpg.specialization.SpecializationSlot;
 import com.gmail.nossr50.util.player.UserManager;
 import com.gmail.nossr50.util.skills.SkillTools;
 import com.gmail.nossr50.util.text.StringUtils;
@@ -53,7 +54,7 @@ public class PapiExpansion extends PlaceholderExpansion {
 
     @Override
     public @NonNull String getIdentifier() {
-        return "mcmmo";
+        return "mcrpg"; // mcRPG: placeholders are %mcrpg_...%
     }
 
     @Override
@@ -195,25 +196,9 @@ public class PapiExpansion extends PlaceholderExpansion {
             return null;
         }
 
-        double modifier = 1.0F;
-
-        if (Permissions.customXpBoost(player, skill)) {
-            modifier = ExperienceConfig.getInstance().getCustomXpPerkBoost();
-        } else if (Permissions.quadrupleXp(player, skill)) {
-            modifier = 4;
-        } else if (Permissions.tripleXp(player, skill)) {
-            modifier = 3;
-        } else if (Permissions.doubleAndOneHalfXp(player, skill)) {
-            modifier = 2.5;
-        } else if (Permissions.doubleXp(player, skill)) {
-            modifier = 2;
-        } else if (Permissions.oneAndOneHalfXp(player, skill)) {
-            modifier = 1.5;
-        } else if (Permissions.oneAndOneTenthXp(player, skill)) {
-            modifier = 1.1;
-        }
-
-        return String.valueOf(modifier);
+        // mcRPG: the only personal XP rate modifier is the specialization multiplier
+        // (there are no XP perks)
+        return String.valueOf(Specialization.xpMultiplier(user.getProfile(), skill));
     }
 
     public String isExpEventActive(Player player) {
@@ -302,6 +287,10 @@ public class PapiExpansion extends PlaceholderExpansion {
         registerPlaceholder(new XpEventActivePlaceholder(this));
         // %mcmmo_xprate%
         registerPlaceholder(new XpRatePlaceholder(this));
+
+        // mcRPG: %mcrpg_primary_skill% and %mcrpg_secondary_skill%
+        registerPlaceholder(new SpecializationPlaceholder(SpecializationSlot.PRIMARY));
+        registerPlaceholder(new SpecializationPlaceholder(SpecializationSlot.SECONDARY));
 
         // %mcmmo_mctop_overall:<position>%
         registerPlaceholder(McTopPlaceholder.value(null, leaderboardPlaceholderCache));

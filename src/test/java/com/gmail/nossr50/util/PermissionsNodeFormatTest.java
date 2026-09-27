@@ -29,10 +29,10 @@ class PermissionsNodeFormatTest {
         Permissions.salvageMaterialType(permissible, MaterialType.DIAMOND);
 
         // Then - the type-suffixed nodes are queried
-        verify(permissible).hasPermission("mcmmo.ability.repair.armorrepair");
-        verify(permissible).hasPermission("mcmmo.ability.repair.woodrepair");
-        verify(permissible).hasPermission("mcmmo.ability.salvage.toolsalvage");
-        verify(permissible).hasPermission("mcmmo.ability.salvage.diamondsalvage");
+        verify(permissible).hasPermission("mcrpg.ability.repair.armorrepair");
+        verify(permissible).hasPermission("mcrpg.ability.repair.woodrepair");
+        verify(permissible).hasPermission("mcrpg.ability.salvage.toolsalvage");
+        verify(permissible).hasPermission("mcrpg.ability.salvage.diamondsalvage");
     }
 
     @Test
@@ -44,7 +44,7 @@ class PermissionsNodeFormatTest {
         Permissions.vanillaXpBoost(permissible, PrimarySkillType.MINING);
 
         // Then - the per-skill node is queried
-        verify(permissible).hasPermission("mcmmo.ability.mining.vanillaxpboost");
+        verify(permissible).hasPermission("mcrpg.ability.mining.vanillaxpboost");
     }
 
     @Test
@@ -57,7 +57,7 @@ class PermissionsNodeFormatTest {
 
         // Then - underscores are stripped from the material name in the node
         verify(permissible).hasPermission(
-                "mcmmo.ability.herbalism.greenthumb.blocks.mossycobblestone");
+                "mcrpg.ability.herbalism.greenthumb.blocks.mossycobblestone");
     }
 
     @Test
@@ -70,7 +70,7 @@ class PermissionsNodeFormatTest {
 
         // Then - underscores are stripped from the material name in the node
         verify(permissible).hasPermission(
-                "mcmmo.ability.herbalism.greenthumb.plants.sweetberrybush");
+                "mcrpg.ability.herbalism.greenthumb.plants.sweetberrybush");
     }
 
     @Test
@@ -82,6 +82,6 @@ class PermissionsNodeFormatTest {
         Permissions.callOfTheWild(permissible, EntityType.WOLF);
 
         // Then - the per-entity node is queried
-        verify(permissible).hasPermission("mcmmo.ability.taming.callofthewild.wolf");
+        verify(permissible).hasPermission("mcrpg.ability.taming.callofthewild.wolf");
     }
 }

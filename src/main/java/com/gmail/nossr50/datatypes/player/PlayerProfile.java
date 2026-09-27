@@ -7,6 +7,7 @@ import com.gmail.nossr50.datatypes.experience.FormulaType;
 import com.gmail.nossr50.datatypes.skills.PrimarySkillType;
 import com.gmail.nossr50.datatypes.skills.SuperAbilityType;
 import com.gmail.nossr50.mcMMO;
+import com.gmail.nossr50.mcrpg.specialization.SpecializationSlot;
 import com.gmail.nossr50.runnables.player.PlayerProfileSaveTask;
 import com.gmail.nossr50.util.player.UserManager;
 import com.gmail.nossr50.util.skills.SkillTools;
@@ -143,6 +144,8 @@ public class PlayerProfile {
                     ImmutableMap.copyOf(skills), ImmutableMap.copyOf(skillsXp),
                     ImmutableMap.copyOf(abilityDATS), scoreboardTipsShown,
                     ImmutableMap.copyOf(uniquePlayerData), lastLogin);
+            // mcRPG: the copy is what gets written, so it needs the specialization slots too
+            profileCopy.loadSpecialization(primarySkill, secondarySkill);
             saved = mcMMO.getDatabaseManager().saveUser(profileCopy);
         } finally {
             if (!saved) {
@@ -516,5 +519,51 @@ public class PlayerProfile {
         }
 
         return sum / parents.size();
+    }
+
+    /* mcRPG: specialization slots */
+
+    private volatile @Nullable PrimarySkillType primarySkill;
+    private volatile @Nullable PrimarySkillType secondarySkill;
+
+    /**
+     * The skill in a specialization slot, or {@code null} if the slot is empty.
+     *
+     * @param slot the slot to read
+     * @return the skill in that slot, or null
+     */
+    public @Nullable PrimarySkillType getSpecialization(@NotNull SpecializationSlot slot) {
+        return slot == SpecializationSlot.PRIMARY ? primarySkill : secondarySkill;
+    }
+
+    /**
+     * Puts a skill in a specialization slot, or empties it with {@code null}, and marks the
+     * profile for saving. This does not check mcRPG's rules; use
+     * {@link com.gmail.nossr50.mcrpg.specialization.Specialization} for that.
+     *
+     * @param slot the slot to change
+     * @param skill the skill to put in the slot, or null to empty it
+     */
+    public void setSpecialization(@NotNull SpecializationSlot slot,
+            @Nullable PrimarySkillType skill) {
+        markProfileDirty();
+        if (slot == SpecializationSlot.PRIMARY) {
+            primarySkill = skill;
+        } else {
+            secondarySkill = skill;
+        }
+    }
+
+    /**
+     * Sets both slots from stored data without marking the profile for saving. Only for code
+     * that loads or copies profiles.
+     *
+     * @param primary the stored Primary skill, or null
+     * @param secondary the stored Secondary skill, or null
+     */
+    public void loadSpecialization(@Nullable PrimarySkillType primary,
+            @Nullable PrimarySkillType secondary) {
+        this.primarySkill = primary;
+        this.secondarySkill = secondary;
     }
 }

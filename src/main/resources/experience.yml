@@ -34,8 +34,8 @@ ExploitFix:
     PreventArmorStandInteraction: true
     PreventMannequinInteraction: true
     # This include NPCs from stuff like Citizens, this is not a setting for Vanilla Minecraft Villagers (Which can be considered NPCs)
-    # mcMMO normally doesn't process attacks against an Entity if it is an NPC from another plugin
-    # Of course, mcMMO doesn't know for sure whether something is an NPC, it checks a few known things, see our source code to see how
+    # mcRPG normally doesn't process attacks against an Entity if it is an NPC from another plugin
+    # Of course, mcRPG doesn't know for sure whether something is an NPC, it checks a few known things, see our source code to see how
     PreventPluginNPCInteraction: true
     # This will limit XP gained from unnaturally tall plants, like those created by Bone Meal
     LimitTallPlantFarming: true
@@ -143,7 +143,7 @@ Experience_Formula:
     # EXPONENTIAL: multiplier * level ^ exponent + base
     Curve: LINEAR
 
-    # If invalid values are entered mcMMO will not start and print an error in the console
+    # If invalid values are entered mcRPG will not start and print an error in the console
     Linear_Values:
         base: 1020
         multiplier: 20
@@ -194,10 +194,17 @@ Experience_Formula:
         Fishing: 1.0
         Alchemy: 1.0
 
-    # XP earned by players with the permission mcmmo.perks.xp.customboost.<skillname> will get multiplied
-    # with 1.25 by default, resulting in a 25% XP boost
-    Custom_XP_Perk:
-        Boost: 1.25
+#
+# mcRPG: Specialization
+# Every XP gain is multiplied by the skill's role in the player's Specializations.
+# Primary: the player's Primary Specialization. Secondary: their Secondary Specialization.
+# Unselected: every other skill, and every skill for players who haven't chosen yet.
+###
+Specialization:
+    Multipliers:
+        Primary: 1.25
+        Secondary: 1.0
+        Unselected: 0.35
 
 #
 # Settings for Diminished Returns
@@ -233,7 +240,7 @@ Diminished_Returns:
     Time_Interval: 10
 
 #
-#  Settings for XP conversion with '/mcconvert experience'
+#  Settings for XP conversion with '/rpgconvert experience'
 ###
 Conversion:
     # Old experience will get divided by this modifier
@@ -600,32 +607,48 @@ Experience_Values:
         Leather: 1.6
         String: 1.8
         Other: 1.5
+    Salvage:
+        # mcRPG: Salvage XP has two parts.
+        # Wear: durability the item lost while a player used or wore it, as a fraction of its
+        # max durability, x Wear_Base x the item's XpMultiplier (salvage.vanilla.yml) x the
+        # material multiplier from Repair above. This matches what Repair pays for restoring
+        # the same durability. mcRPG won't salvage an item too damaged to return at least one
+        # material, so the most wear an item can count is just before that point.
+        # Found enchantments: Found_Enchantment_Per_Level x the enchantment levels the item had
+        # when it was found in a loot chest, caught while fishing, or dropped by a mob.
+        # Enchantments added at an enchanting table or anvil, or on villager trades, give 0.
+        Wear_Base: 1000.0
+        Found_Enchantment_Per_Level: 1000
     Smelting:
-        Copper_Nugget: 15
-        Raw_Copper: 15
-        Deepslate_Redstone_Ore: 30
-        Deepslate_Copper_Ore: 25
-        Deepslate_Coal_Ore: 20
-        Deepslate_Diamond_Ore: 140
-        Deepslate_Emerald_Ore: 110
-        Deepslate_Iron_Ore: 40
-        Deepslate_Gold_Ore: 50
-        Deepslate_Lapis_Lazuli_Ore: 60
-        Copper_Ore: 15
-        Ancient_Debris: 200
-        Coal_Ore: 10
-        Diamond_Ore: 75
-        Emerald_Ore: 100
-        Gold_Ore: 35
-        Raw_Gold: 35
-        Iron_Ore: 25
-        Raw_Iron: 25
-        Lapis_Lazuli_Ore: 40
-        Lapis_Ore: 40
-        Nether_Quartz_Ore: 25
-        Redstone_Ore: 15
-        Nether_Gold_Ore: 35
-        Cobbled_Deepslate: 5
+        # mcRPG: XP for each item a furnace or blast furnace finishes smelting, given to the
+        # furnace's owner (the last player to open or load it). Only items that come from ores
+        # give XP: each is worth about half the Mining XP of the ore it came from. Raw copper
+        # is lower because one copper ore drops 2-5 of it. Anything not listed gives 0, so
+        # farmable items (cobblestone, sand, logs, food, kelp) can't be used to level Smelting.
+        # Extra items from Second Smelt give no extra XP.
+        Raw_Copper: 70
+        Raw_Iron: 450
+        Raw_Gold: 650
+        Ancient_Debris: 3900
+        # Ore blocks mined with Silk Touch: half of each block's Mining XP
+        Coal_Ore: 200
+        Deepslate_Coal_Ore: 350
+        Copper_Ore: 250
+        Deepslate_Copper_Ore: 375
+        Iron_Ore: 450
+        Deepslate_Iron_Ore: 650
+        Gold_Ore: 650
+        Deepslate_Gold_Ore: 950
+        Nether_Gold_Ore: 650
+        Redstone_Ore: 300
+        Deepslate_Redstone_Ore: 450
+        Lapis_Ore: 400
+        Deepslate_Lapis_Ore: 700
+        Emerald_Ore: 500
+        Deepslate_Emerald_Ore: 850
+        Diamond_Ore: 1200
+        Deepslate_Diamond_Ore: 1800
+        Nether_Quartz_Ore: 150
     Taming:
         Animal_Taming:
             Camel: 1300

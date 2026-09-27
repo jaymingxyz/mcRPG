@@ -9,6 +9,7 @@ import static java.util.UUID.randomUUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -111,14 +112,17 @@ class FlatFileDatabaseManagerTest {
             expectedLvlArchery = 7, expectedLvlSwords = 8, expectedLvlAxes = 9,
             expectedLvlAcrobatics = 10, expectedLvlTaming = 11, expectedLvlFishing = 12,
             expectedLvlAlchemy = 13, expectedLvlCrossbows = 14, expectedLvlTridents = 15,
-            expectedLvlMaces = 16, expectedLvlSpears = 17;
+            expectedLvlMaces = 16, expectedLvlSpears = 17,
+            // mcRPG: Salvage and Smelting are stored skills (healthydb.users row one)
+            expectedLvlSalvage = 18, expectedLvlSmelting = 19;
 
     float expectedExpMining = 10, expectedExpWoodcutting = 20, expectedExpRepair = 30,
             expectedExpUnarmed = 40, expectedExpHerbalism = 50, expectedExpExcavation = 60,
             expectedExpArchery = 70, expectedExpSwords = 80, expectedExpAxes = 90,
             expectedExpAcrobatics = 100, expectedExpTaming = 110, expectedExpFishing = 120,
             expectedExpAlchemy = 130, expectedExpCrossbows = 140, expectedExpTridents = 150,
-            expectedExpMaces = 160, expectedExpSpears = 170;
+            expectedExpMaces = 160, expectedExpSpears = 170,
+            expectedExpSalvage = 180, expectedExpSmelting = 190;
 
     long expectedBerserkCd = 111, expectedGigaDrillBreakerCd = 222, expectedTreeFellerCd = 333,
             expectedGreenTerraCd = 444, expectedSerratedStrikesCd = 555,
@@ -994,7 +998,8 @@ class FlatFileDatabaseManagerTest {
             case HERBALISM -> expectedExpHerbalism;
             case MINING -> expectedExpMining;
             case REPAIR -> expectedExpRepair;
-            case SALVAGE, SMELTING -> 0;
+            case SALVAGE -> expectedExpSalvage;
+            case SMELTING -> expectedExpSmelting;
             case SWORDS -> expectedExpSwords;
             case TAMING -> expectedExpTaming;
             case TRIDENTS -> expectedExpTridents;
@@ -1019,7 +1024,8 @@ class FlatFileDatabaseManagerTest {
             case HERBALISM -> expectedLvlHerbalism;
             case MINING -> expectedLvlMining;
             case REPAIR -> expectedLvlRepair;
-            case SALVAGE, SMELTING -> 0;
+            case SALVAGE -> expectedLvlSalvage;
+            case SMELTING -> expectedLvlSmelting;
             case SWORDS -> expectedLvlSwords;
             case TAMING -> expectedLvlTaming;
             case TRIDENTS -> expectedLvlTridents;
@@ -1258,14 +1264,16 @@ class FlatFileDatabaseManagerTest {
     }
 
     @Test
-    void readLeaderboardChildSkillThrowsInvalidSkillException() {
+    void readLeaderboardForSalvageAndSmeltingDoesNotThrow() {
         // Given
         var databaseManager = new FlatFileDatabaseManager(
                 new File(getTemporaryUserFilePath()), logger, PURGE_TIME, 0, true);
 
-        // When / Then
-        assertThrows(InvalidSkillException.class, () ->
+        // When / Then - mcRPG's Salvage and Smelting have their own leaderboards
+        assertDoesNotThrow(() ->
                 databaseManager.readLeaderboard(PrimarySkillType.SALVAGE, 1, 10));
+        assertDoesNotThrow(() ->
+                databaseManager.readLeaderboard(PrimarySkillType.SMELTING, 1, 10));
     }
 
     @Test

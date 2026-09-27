@@ -209,9 +209,13 @@ public class GeneralConfig extends BukkitConfig {
         return config.getBoolean("Metrics.bstats", true);
     }
 
-    //Retro mode will default the value to true if the config file doesn't contain the entry (server is from a previous mcMMO install)
+    /**
+     * mcRPG only supports Standard scaling (levels 1-100), so Retro Mode is always off. The
+     * {@code General.RetroMode.Enabled} config key is ignored. Callers still check this flag, so
+     * forcing it here keeps mcRPG's change to mcMMO's Retro/Standard code down to one line.
+     */
     public boolean getIsRetroMode() {
-        return config.getBoolean("General.RetroMode.Enabled", true);
+        return false;
     }
 
     public String getLocale() {
@@ -472,7 +476,7 @@ public class GeneralConfig extends BukkitConfig {
     }
 
     public String getMySQLTablePrefix() {
-        return config.getString("MySQL.Database.TablePrefix", "mcmmo_");
+        return config.getString("MySQL.Database.TablePrefix", "mcrpg_");
     }
 
     public String getMySQLDatabaseName() {
@@ -1166,5 +1170,28 @@ public class GeneralConfig extends BukkitConfig {
 
     public boolean isMasterySystemEnabled() {
         return config.getBoolean("General.PowerLevel.Skill_Mastery.Enabled");
+    }
+
+    /* mcRPG: Specialization settings (config.yml, Specialization section) */
+
+    /** Whether players with an empty specialization slot are reminded when they log in. */
+    public boolean getSpecializationLoginReminder() {
+        return config.getBoolean("Specialization.Login_Reminder", true);
+    }
+
+    /** Whether choosing a skill in the Specialization menu asks for confirmation first. */
+    public boolean getSpecializationGuiConfirmation() {
+        return config.getBoolean("Specialization.Choose.GUI_Confirmation", true);
+    }
+
+    /** Seconds a player has to confirm /abandonskill after the warning (at least 1). */
+    public int getAbandonConfirmTimeoutSeconds() {
+        return Math.max(1, config.getInt("Specialization.Abandon.Confirm_Timeout_Seconds", 30));
+    }
+
+    /** Percent of its total XP an abandoned skill keeps, clamped to 0-100. */
+    public double getAbandonXpKeptPercent() {
+        final double percent = config.getDouble("Specialization.Abandon.XP_Kept_Percent", 10D);
+        return Math.min(100D, Math.max(0D, percent));
     }
 }

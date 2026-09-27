@@ -128,9 +128,9 @@ public final class McMMORegionBackupStore {
 
     /**
      * Name of the subfolder inside each world folder that holds canonical mcMMO region files.
-     * Resolves to {@code [worldFolder]/mcmmo_regions/}.
+     * Resolves to {@code [worldFolder]/mcrpg_regions/}.
      */
-    public static final String IN_WORLD_FOLDER_NAME = "mcmmo_regions";
+    public static final String IN_WORLD_FOLDER_NAME = "mcrpg_regions"; // mcRPG: was mcmmo_regions
 
     /**
      * Name of the backup-store subfolder inside mcMMO's plugin data directory.
