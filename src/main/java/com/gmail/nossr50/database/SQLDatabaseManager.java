@@ -16,6 +16,7 @@ import com.gmail.nossr50.datatypes.player.UniqueDataType;
 import com.gmail.nossr50.datatypes.skills.PrimarySkillType;
 import com.gmail.nossr50.datatypes.skills.SuperAbilityType;
 import com.gmail.nossr50.mcMMO;
+import com.gmail.nossr50.mcrpg.specialization.SkillCategory;
 import com.gmail.nossr50.mcrpg.specialization.SpecializationSlot;
 import com.gmail.nossr50.runnables.database.UUIDUpdateAsyncTask;
 import com.gmail.nossr50.util.LogUtils;
@@ -393,7 +394,11 @@ public final class SQLDatabaseManager implements DatabaseManager {
     // Update helpers
     // ---------------------------------------------------------------------
 
-    /** mcRPG: saves the specialization slots (NULL for an empty slot). */
+    /**
+     * mcRPG: saves the Specializations as category names (NULL when not chosen). The columns
+     * are named primary_skill and secondary_skill because Specializations were single skills
+     * before 2026-09-27.
+     */
     private boolean updateSpecialization(Connection connection, int userId,
             PlayerProfile profile, String playerName) {
         final String sql = "UPDATE " + tablePrefix + "users SET primary_skill = ?, "
@@ -417,24 +422,23 @@ public final class SQLDatabaseManager implements DatabaseManager {
     }
 
     private static void setSpecializationParameter(PreparedStatement stmt, int index,
-            @Nullable PrimarySkillType skill) throws SQLException {
-        if (skill == null) {
+            @Nullable SkillCategory category) throws SQLException {
+        if (category == null) {
             stmt.setNull(index, Types.VARCHAR);
         } else {
-            stmt.setString(index, skill.name());
+            stmt.setString(index, category.name());
         }
     }
 
-    /** mcRPG: reads a specialization slot column; NULL or an unknown name is an empty slot. */
-    private static @Nullable PrimarySkillType readSpecialization(ResultSet result,
+    /**
+     * mcRPG: reads a Specialization column. NULL or an unknown name means it isn't chosen, and
+     * a skill name from an older build reads as that skill's category.
+     */
+    private static @Nullable SkillCategory readSpecialization(ResultSet result,
             String column) {
         try {
-            final String value = result.getString(column);
-            if (value == null || value.isBlank()) {
-                return null;
-            }
-            return PrimarySkillType.valueOf(value.trim().toUpperCase(Locale.ROOT));
-        } catch (SQLException | IllegalArgumentException ignored) {
+            return SkillCategory.fromStoredName(result.getString(column));
+        } catch (SQLException ignored) {
             return null;
         }
     }
@@ -1251,7 +1255,7 @@ public final class SQLDatabaseManager implements DatabaseManager {
 
         final PlayerProfile profile = new PlayerProfile(playerName, uuid, skills, skillsXp,
                 skillsDATS, scoreboardTipsShown, uniqueData, null);
-        // mcRPG: specialization slots
+        // mcRPG: Specializations
         profile.loadSpecialization(readSpecialization(result, "primary_skill"),
                 readSpecialization(result, "secondary_skill"));
         return profile;
@@ -1505,7 +1509,7 @@ public final class SQLDatabaseManager implements DatabaseManager {
         updateStructure(experience, "salvage", "10");
         updateStructure(experience, "smelting", "10");
 
-        // mcRPG: specialization slots on the users table (NULL = empty slot)
+        // mcRPG: Specializations on the users table (NULL = not chosen)
         ensureSpecializationColumn("primary_skill");
         ensureSpecializationColumn("secondary_skill");
     }

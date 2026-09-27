@@ -1,9 +1,7 @@
 package com.gmail.nossr50.mcrpg.commands;
 
 import com.gmail.nossr50.datatypes.player.McMMOPlayer;
-import com.gmail.nossr50.datatypes.skills.PrimarySkillType;
 import com.gmail.nossr50.locale.LocaleLoader;
-import com.gmail.nossr50.mcMMO;
 import com.gmail.nossr50.mcrpg.gui.SkillSelectionMenu;
 import com.gmail.nossr50.mcrpg.specialization.SkillCategory;
 import com.gmail.nossr50.mcrpg.specialization.SpecializationActions;
@@ -20,11 +18,11 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * /chooseskill opens the Specialization menu.
- * /chooseskill &lt;primary|secondary&gt; &lt;skill&gt; fills an empty slot directly; typing the
- * full command counts as the player's confirmation.
+ * /choosespecialization (alias /csp) opens the Specialization menu.
+ * /choosespecialization &lt;primary|secondary&gt; &lt;category&gt; chooses a category directly;
+ * typing the full command counts as the player's confirmation.
  */
-public class ChooseSkillCommand implements TabExecutor {
+public class ChooseSpecializationCommand implements TabExecutor {
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command,
             @NotNull String label, String[] args) {
@@ -55,12 +53,14 @@ public class ChooseSkillCommand implements TabExecutor {
             return true;
         }
 
-        if (CommandUtils.isInvalidSkill(player, args[1])) {
+        final SkillCategory category = SkillCategory.fromCommandName(args[1]);
+        if (category == null) {
+            player.sendMessage(LocaleLoader.getString("mcRPG.Choose.InvalidCategory", args[1],
+                    categoryNamesText()));
             return true;
         }
-        final PrimarySkillType skill = mcMMO.p.getSkillTools().matchSkill(args[1]);
 
-        SpecializationActions.tryChoose(player, mmoPlayer.getProfile(), slot, skill);
+        SpecializationActions.tryChoose(player, mmoPlayer.getProfile(), slot, category);
         return true;
     }
 
@@ -68,20 +68,26 @@ public class ChooseSkillCommand implements TabExecutor {
     public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command,
             @NotNull String alias, String[] args) {
         if (args.length == 1) {
-            return startingWith(args[0], Arrays.stream(SpecializationSlot.values())
-                    .map(SpecializationSlot::commandName).toList());
+            return startingWith(args[0], slotNames());
         }
         if (args.length == 2) {
-            return startingWith(args[1], availableSkillNames());
+            return startingWith(args[1], categoryNames());
         }
         return List.of();
     }
 
-    static @NotNull List<String> availableSkillNames() {
-        return Arrays.stream(SkillCategory.values())
-                .flatMap(category -> category.availableSkills().stream())
-                .map(skill -> skill.name().toLowerCase(Locale.ROOT))
-                .toList();
+    static @NotNull List<String> slotNames() {
+        return Arrays.stream(SpecializationSlot.values())
+                .map(SpecializationSlot::commandName).toList();
+    }
+
+    static @NotNull List<String> categoryNames() {
+        return Arrays.stream(SkillCategory.values()).map(SkillCategory::commandName).toList();
+    }
+
+    /** "melee, ranged, metallurgy, botany, blacksmithing, survivalism" */
+    static @NotNull String categoryNamesText() {
+        return String.join(", ", categoryNames());
     }
 
     static @NotNull List<String> startingWith(@NotNull String prefix,

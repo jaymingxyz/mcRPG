@@ -46,9 +46,9 @@ import com.gmail.nossr50.commands.skills.WoodcuttingCommand;
 import com.gmail.nossr50.datatypes.skills.PrimarySkillType;
 import com.gmail.nossr50.locale.LocaleLoader;
 import com.gmail.nossr50.mcMMO;
-import com.gmail.nossr50.mcrpg.commands.AbandonSkillCommand;
-import com.gmail.nossr50.mcrpg.commands.ChooseSkillCommand;
-import com.gmail.nossr50.mcrpg.commands.SetSkillCommand;
+import com.gmail.nossr50.mcrpg.commands.AbandonSpecializationCommand;
+import com.gmail.nossr50.mcrpg.commands.ChooseSpecializationCommand;
+import com.gmail.nossr50.mcrpg.commands.SetSpecializationCommand;
 import com.gmail.nossr50.util.text.StringUtils;
 import java.util.Arrays;
 import java.util.List;
@@ -188,25 +188,24 @@ public final class CommandRegistrationManager {
 
             // mcRPG has no party system, so /party and /ptp are not registered
 
-            // mcRPG: specialization commands
-            spec("chooseskill", "mcrpg.commands.chooseskill",
-                    () -> List.of(LocaleLoader.getString("Commands.Usage.0", "chooseskill"),
-                            LocaleLoader.getString("Commands.Usage.2", "chooseskill",
-                                    "<primary|secondary>",
-                                    "<" + LocaleLoader.getString("Commands.Usage.Skill")
-                                            + ">")),
-                    ChooseSkillCommand::new),
-            spec("abandonskill", "mcrpg.commands.abandonskill",
-                    () -> List.of(LocaleLoader.getString("Commands.Usage.2", "abandonskill",
-                            "<" + LocaleLoader.getString("Commands.Usage.Skill") + ">",
+            // mcRPG: Specialization commands (aliases /csp and /asp are in plugin.yml)
+            spec("choosespecialization", "mcrpg.commands.choosespecialization",
+                    () -> List.of(LocaleLoader.getString("Commands.Usage.0",
+                                    "choosespecialization"),
+                            LocaleLoader.getString("Commands.Usage.2", "choosespecialization",
+                                    "<primary|secondary>", "<category>")),
+                    ChooseSpecializationCommand::new),
+            spec("abandonspecialization", "mcrpg.commands.abandonspecialization",
+                    () -> List.of(LocaleLoader.getString("Commands.Usage.2",
+                            "abandonspecialization", "<category|primary|secondary>",
                             "[confirm]")),
-                    AbandonSkillCommand::new),
-            spec("rpgsetskill", "mcrpg.commands.setskill",
-                    () -> List.of(LocaleLoader.getString("Commands.Usage.3", "rpgsetskill",
+                    AbandonSpecializationCommand::new),
+            spec("rpgsetspecialization", "mcrpg.commands.setspecialization",
+                    () -> List.of(LocaleLoader.getString("Commands.Usage.3",
+                            "rpgsetspecialization",
                             "<" + LocaleLoader.getString("Commands.Usage.Player") + ">",
-                            "<primary|secondary>",
-                            "<" + LocaleLoader.getString("Commands.Usage.Skill") + "|none>")),
-                    SetSkillCommand::new),
+                            "<primary|secondary>", "<category|none>")),
+                    SetSpecializationCommand::new),
 
             // Player Commands
             spec("rpginspect",

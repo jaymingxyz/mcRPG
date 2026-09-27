@@ -1,5 +1,6 @@
 package com.gmail.nossr50.mcrpg.gui;
 
+import static com.gmail.nossr50.mcrpg.specialization.SpecializationDisplay.categoryName;
 import static com.gmail.nossr50.mcrpg.specialization.SpecializationDisplay.skillName;
 import static com.gmail.nossr50.mcrpg.specialization.SpecializationDisplay.slotName;
 
@@ -29,12 +30,13 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.VisibleForTesting;
 
 /**
- * The Specialization menu opened by /chooseskill and the login reminder. Each category gets
- * one row: its label, then its skills. The right-hand side shows the player's Specializations
- * and the buttons.
+ * The Specialization menu opened by /choosespecialization and the login reminder. Each category
+ * gets one row: its label, then its skills. The right-hand side shows the player's
+ * Specializations and the buttons.
  *
  * <pre>
  *            column 0     1-4          5-8
@@ -45,8 +47,9 @@ import org.jetbrains.annotations.VisibleForTesting;
  * Row 5:     Blacksmith.  skills       |   How Specializations work
  * Row 6:     Survivalism  skills       |   Close
  * </pre>
- * Left-click a skill to make it the Primary Specialization, right-click for Secondary. The
- * menu never abandons one; that is only done with /abandonskill.
+ * A Specialization is a whole category. Left-click a category's label or any of its skills to
+ * make that category the Primary Specialization, right-click for Secondary. The menu never
+ * abandons one; that is only done with /abandonspecialization.
  */
 public final class SkillSelectionMenu implements InventoryHolder {
     static final int SIZE = 54;
@@ -59,6 +62,7 @@ public final class SkillSelectionMenu implements InventoryHolder {
 
     private final Inventory inventory;
     private final Map<Integer, PrimarySkillType> skillSlots = layout();
+    private final Map<Integer, SkillCategory> labelSlots = categoryLabels();
 
     private SkillSelectionMenu(@NotNull Player player, @NotNull PlayerProfile profile) {
         inventory = Bukkit.createInventory(this, SIZE,
@@ -123,10 +127,8 @@ public final class SkillSelectionMenu implements InventoryHolder {
             }
         }
 
-        for (Map.Entry<Integer, SkillCategory> label : categoryLabels().entrySet()) {
-            inventory.setItem(label.getKey(), MenuItems.item(
-                    GuiConfig.getInstance().getCategoryIcon(label.getValue()),
-                    ChatColor.GOLD + LocaleLoader.getString(label.getValue().nameKey())));
+        for (Map.Entry<Integer, SkillCategory> label : labelSlots.entrySet()) {
+            inventory.setItem(label.getKey(), categoryLabel(player, profile, label.getValue()));
         }
 
         inventory.setItem(PRIMARY_INDICATOR, slotIndicator(profile, SpecializationSlot.PRIMARY));
@@ -145,51 +147,85 @@ public final class SkillSelectionMenu implements InventoryHolder {
 
     private static @NotNull ItemStack slotIndicator(
             @NotNull PlayerProfile profile, @NotNull SpecializationSlot slot) {
-        final PrimarySkillType skill = profile.getSpecialization(slot);
+        final SkillCategory category = profile.getSpecialization(slot);
         final String name = LocaleLoader.getString("mcRPG.Menu.SlotIndicator.Name",
                 slotName(slot));
-        if (skill == null) {
+        if (category == null) {
             return MenuItems.item(Material.LIGHT_GRAY_STAINED_GLASS_PANE, name,
                     List.of(LocaleLoader.getString("mcRPG.Menu.SlotIndicator.Empty")), false);
         }
-        return MenuItems.item(GuiConfig.getInstance().getIcon(skill), name,
+        return MenuItems.item(GuiConfig.getInstance().getCategoryIcon(category), name,
                 List.of(LocaleLoader.getString("mcRPG.Menu.SlotIndicator.Chosen",
-                        skillName(skill))), true);
+                                categoryName(category)),
+                        LocaleLoader.getString("mcRPG.Menu.SlotIndicator.Skills",
+                                SpecializationDisplay.skillList(category))), true);
+    }
+
+    /** A category's label: its skills, the XP rate they earn now, and how to choose it. */
+    private static @NotNull ItemStack categoryLabel(@NotNull Player player,
+            @NotNull PlayerProfile profile, @NotNull SkillCategory category) {
+        final SpecializationSlot slot = Specialization.slotOf(profile, category);
+        final SpecializationRole role = slot == null ? SpecializationRole.UNSELECTED
+                : slot.role();
+        final List<String> lore = new ArrayList<>();
+        lore.add(LocaleLoader.getString("mcRPG.Menu.Category.Skills",
+                SpecializationDisplay.skillList(category)));
+        lore.add(LocaleLoader.getString("mcRPG.Menu.Skill.Rate",
+                SpecializationDisplay.multiplierText(role)));
+        lore.add("");
+        lore.addAll(choiceLore(player, profile, category));
+        return MenuItems.item(GuiConfig.getInstance().getCategoryIcon(category),
+                ChatColor.GOLD + categoryName(category), lore, slot != null);
     }
 
     private static @NotNull ItemStack skillIcon(@NotNull Player player,
             @NotNull PlayerProfile profile, @NotNull PrimarySkillType skill) {
         final SpecializationRole role = Specialization.roleOf(profile, skill);
+        final SkillCategory category = SkillCategory.of(skill);
         final List<String> lore = new ArrayList<>();
         lore.add(LocaleLoader.getString("mcRPG.Menu.Skill.Level", profile.getSkillLevel(skill)));
-        lore.add(LocaleLoader.getString("mcRPG.Menu.Skill.Category",
-                LocaleLoader.getString(SkillCategory.of(skill).nameKey())));
+        lore.add(LocaleLoader.getString("mcRPG.Menu.Skill.Category", categoryName(category)));
         lore.add(LocaleLoader.getString("mcRPG.Menu.Skill.Rate",
                 SpecializationDisplay.multiplierText(role)));
         lore.add("");
-
-        switch (role) {
-            case PRIMARY -> lore.add(LocaleLoader.getString("mcRPG.Menu.Skill.IsPrimary"));
-            case SECONDARY -> lore.add(LocaleLoader.getString("mcRPG.Menu.Skill.IsSecondary"));
-            case UNSELECTED -> {
-                if (!SpecializationActions.canUseSkill(player, skill)) {
-                    lore.add(LocaleLoader.getString("mcRPG.Choose.NoPermission",
-                            skillName(skill)));
-                } else {
-                    lore.add(LocaleLoader.getString(
-                            profile.getSpecialization(SpecializationSlot.PRIMARY) == null
-                                    ? "mcRPG.Menu.Skill.LeftClick"
-                                    : "mcRPG.Menu.Skill.PrimaryFilled"));
-                    lore.add(LocaleLoader.getString(
-                            profile.getSpecialization(SpecializationSlot.SECONDARY) == null
-                                    ? "mcRPG.Menu.Skill.RightClick"
-                                    : "mcRPG.Menu.Skill.SecondaryFilled"));
-                }
-            }
-        }
+        lore.addAll(choiceLore(player, profile, category));
 
         return MenuItems.item(GuiConfig.getInstance().getIcon(skill),
                 ChatColor.YELLOW + skillName(skill), lore, role != SpecializationRole.UNSELECTED);
+    }
+
+    /** Whether the category is a Specialization, or how to choose it and what's in the way. */
+    private static @NotNull List<String> choiceLore(@NotNull Player player,
+            @NotNull PlayerProfile profile, @NotNull SkillCategory category) {
+        final String name = categoryName(category);
+        final SpecializationSlot slot = Specialization.slotOf(profile, category);
+        if (slot == SpecializationSlot.PRIMARY) {
+            return List.of(LocaleLoader.getString("mcRPG.Menu.Choice.IsPrimary", name));
+        }
+        if (slot == SpecializationSlot.SECONDARY) {
+            return List.of(LocaleLoader.getString("mcRPG.Menu.Choice.IsSecondary", name));
+        }
+        if (!SpecializationActions.canUseCategory(player, category)) {
+            return List.of(LocaleLoader.getString("mcRPG.Choose.NoPermission", name));
+        }
+        return List.of(
+                profile.getSpecialization(SpecializationSlot.PRIMARY) == null
+                        ? LocaleLoader.getString("mcRPG.Menu.Choice.LeftClick", name)
+                        : LocaleLoader.getString("mcRPG.Menu.Choice.PrimaryFilled"),
+                profile.getSpecialization(SpecializationSlot.SECONDARY) == null
+                        ? LocaleLoader.getString("mcRPG.Menu.Choice.RightClick", name)
+                        : LocaleLoader.getString("mcRPG.Menu.Choice.SecondaryFilled"));
+    }
+
+    /** The category shown at this slot, by its label or one of its skills, or null. */
+    @VisibleForTesting
+    @Nullable SkillCategory categoryAt(int rawSlot) {
+        final SkillCategory labelled = labelSlots.get(rawSlot);
+        if (labelled != null) {
+            return labelled;
+        }
+        final PrimarySkillType skill = skillSlots.get(rawSlot);
+        return skill == null ? null : SkillCategory.of(skill);
     }
 
     private static @NotNull List<String> infoLore() {
@@ -223,10 +259,10 @@ public final class SkillSelectionMenu implements InventoryHolder {
             return;
         }
 
-        final PrimarySkillType skill = skillSlots.get(rawSlot);
+        final SkillCategory category = categoryAt(rawSlot);
         final SpecializationSlot targetSlot = event.isLeftClick() ? SpecializationSlot.PRIMARY
                 : event.isRightClick() ? SpecializationSlot.SECONDARY : null;
-        if (skill == null || targetSlot == null) {
+        if (category == null || targetSlot == null) {
             return;
         }
 
@@ -238,19 +274,19 @@ public final class SkillSelectionMenu implements InventoryHolder {
         }
         final PlayerProfile profile = mmoPlayer.getProfile();
 
-        final boolean allowed = SpecializationActions.canUseSkill(player, skill)
-                && Specialization.checkChoose(profile, targetSlot, skill)
+        final boolean allowed = SpecializationActions.canUseCategory(player, category)
+                && Specialization.checkChoose(profile, targetSlot, category)
                 == Specialization.ChooseResult.SUCCESS;
         if (!allowed) {
             // Sends the reason without changing anything
-            SpecializationActions.tryChoose(player, profile, targetSlot, skill);
+            SpecializationActions.tryChoose(player, profile, targetSlot, category);
             return;
         }
 
         if (mcMMO.p.getGeneralConfig().getSpecializationGuiConfirmation()) {
-            ConfirmChoiceMenu.open(player, skill, targetSlot);
+            ConfirmChoiceMenu.open(player, category, targetSlot);
         } else {
-            SpecializationActions.tryChoose(player, profile, targetSlot, skill);
+            SpecializationActions.tryChoose(player, profile, targetSlot, category);
             render(player, profile);
         }
     }

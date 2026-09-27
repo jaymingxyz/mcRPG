@@ -132,7 +132,7 @@ public class SkillresetCommand implements TabExecutor {
         float xpRemoved = profile.getSkillXpLevelRaw(skill);
 
         profile.modifySkill(skill, 0);
-        // mcRPG: a reset skill also leaves the player's Primary or Secondary slot
+        // mcRPG: a reset skill also clears the Specialization its category is in
         Specialization.clearSlotHolding(profile, skill);
 
         if (player == null) {

@@ -7,6 +7,7 @@ import com.gmail.nossr50.datatypes.experience.FormulaType;
 import com.gmail.nossr50.datatypes.skills.PrimarySkillType;
 import com.gmail.nossr50.datatypes.skills.SuperAbilityType;
 import com.gmail.nossr50.mcMMO;
+import com.gmail.nossr50.mcrpg.specialization.SkillCategory;
 import com.gmail.nossr50.mcrpg.specialization.SpecializationSlot;
 import com.gmail.nossr50.runnables.player.PlayerProfileSaveTask;
 import com.gmail.nossr50.util.player.UserManager;
@@ -144,8 +145,8 @@ public class PlayerProfile {
                     ImmutableMap.copyOf(skills), ImmutableMap.copyOf(skillsXp),
                     ImmutableMap.copyOf(abilityDATS), scoreboardTipsShown,
                     ImmutableMap.copyOf(uniquePlayerData), lastLogin);
-            // mcRPG: the copy is what gets written, so it needs the specialization slots too
-            profileCopy.loadSpecialization(primarySkill, secondarySkill);
+            // mcRPG: the copy is what gets written, so it needs the Specializations too
+            profileCopy.loadSpecialization(primarySpecialization, secondarySpecialization);
             saved = mcMMO.getDatabaseManager().saveUser(profileCopy);
         } finally {
             if (!saved) {
@@ -526,49 +527,51 @@ public class PlayerProfile {
         return sum / parents.size();
     }
 
-    /* mcRPG: specialization slots */
+    /* mcRPG: Specializations (each is a skill category) */
 
-    private volatile @Nullable PrimarySkillType primarySkill;
-    private volatile @Nullable PrimarySkillType secondarySkill;
+    private volatile @Nullable SkillCategory primarySpecialization;
+    private volatile @Nullable SkillCategory secondarySpecialization;
 
     /**
-     * The skill in a specialization slot, or {@code null} if the slot is empty.
+     * The category chosen as a Specialization, or {@code null} if it hasn't been chosen.
      *
-     * @param slot the slot to read
-     * @return the skill in that slot, or null
+     * @param slot Primary or Secondary
+     * @return the chosen category, or null
      */
-    public @Nullable PrimarySkillType getSpecialization(@NotNull SpecializationSlot slot) {
-        return slot == SpecializationSlot.PRIMARY ? primarySkill : secondarySkill;
+    public @Nullable SkillCategory getSpecialization(@NotNull SpecializationSlot slot) {
+        return slot == SpecializationSlot.PRIMARY ? primarySpecialization
+                : secondarySpecialization;
     }
 
     /**
-     * Puts a skill in a specialization slot, or empties it with {@code null}, and marks the
-     * profile for saving. This does not check mcRPG's rules; use
+     * Sets or clears (with {@code null}) a Specialization and marks the profile for saving.
+     * This does not check mcRPG's rules; use
      * {@link com.gmail.nossr50.mcrpg.specialization.Specialization} for that.
      *
-     * @param slot the slot to change
-     * @param skill the skill to put in the slot, or null to empty it
+     * @param slot Primary or Secondary
+     * @param category the category to choose, or null to clear it
      */
     public void setSpecialization(@NotNull SpecializationSlot slot,
-            @Nullable PrimarySkillType skill) {
+            @Nullable SkillCategory category) {
         markProfileDirty();
         if (slot == SpecializationSlot.PRIMARY) {
-            primarySkill = skill;
+            primarySpecialization = category;
         } else {
-            secondarySkill = skill;
+            secondarySpecialization = category;
         }
     }
 
     /**
-     * Sets both slots from stored data without marking the profile for saving. Only for code
-     * that loads or copies profiles.
+     * Sets both Specializations from stored data without marking the profile for saving. Only
+     * for code that loads or copies profiles. If both are the same category, which happens
+     * when older data stored two skills from one category, the Secondary is cleared.
      *
-     * @param primary the stored Primary skill, or null
-     * @param secondary the stored Secondary skill, or null
+     * @param primary the stored Primary Specialization, or null
+     * @param secondary the stored Secondary Specialization, or null
      */
-    public void loadSpecialization(@Nullable PrimarySkillType primary,
-            @Nullable PrimarySkillType secondary) {
-        this.primarySkill = primary;
-        this.secondarySkill = secondary;
+    public void loadSpecialization(@Nullable SkillCategory primary,
+            @Nullable SkillCategory secondary) {
+        this.primarySpecialization = primary;
+        this.secondarySpecialization = secondary == primary ? null : secondary;
     }
 }

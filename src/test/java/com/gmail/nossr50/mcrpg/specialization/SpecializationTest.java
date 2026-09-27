@@ -20,9 +20,10 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
 /**
- * mcRPG's specialization rules: roles and XP multipliers, choosing a skill, and abandoning one
- * (the skill keeps 10% of its total XP and its level is worked out again). XP numbers use the
- * default LINEAR curve in Standard mode: 11,300 + 2,000 x level per level.
+ * mcRPG's Specialization rules. Each Specialization is a whole skill category: every skill in
+ * it earns the Specialization's XP rate, and abandoning it cuts every one of its skills to 10%
+ * of its total XP. XP numbers use the default LINEAR curve in Standard mode: 11,300 +
+ * 2,000 x level per level.
  */
 class SpecializationTest extends MMOTestEnvironment {
     private static final Logger logger = Logger.getLogger(SpecializationTest.class.getName());
@@ -58,6 +59,12 @@ class SpecializationTest extends MMOTestEnvironment {
         cleanUpStaticMocks();
     }
 
+    private Specialization.SkillAbandon abandonOf(Specialization.AbandonPreview preview,
+            PrimarySkillType skill) {
+        return preview.skills().stream().filter(each -> each.skill() == skill).findFirst()
+                .orElseThrow();
+    }
+
     // --- roles and multipliers ---
 
     @Test
@@ -71,13 +78,18 @@ class SpecializationTest extends MMOTestEnvironment {
     }
 
     @Test
-    void chosenSkillsShouldEarnTheirSlotRates() {
-        Specialization.choose(profile, SpecializationSlot.PRIMARY, PrimarySkillType.MINING);
-        Specialization.choose(profile, SpecializationSlot.SECONDARY, PrimarySkillType.SMELTING);
+    void everySkillInAChosenCategoryShouldEarnItsSpecializationRate() {
+        Specialization.choose(profile, SpecializationSlot.PRIMARY, SkillCategory.METALLURGY);
+        Specialization.choose(profile, SpecializationSlot.SECONDARY, SkillCategory.BOTANY);
 
-        assertThat(Specialization.xpMultiplier(profile, PrimarySkillType.MINING)).isEqualTo(1.25);
-        assertThat(Specialization.xpMultiplier(profile, PrimarySkillType.SMELTING))
-                .isEqualTo(1.0);
+        for (PrimarySkillType skill : SkillCategory.METALLURGY.skills()) {
+            assertThat(Specialization.xpMultiplier(profile, skill)).as("%s", skill)
+                    .isEqualTo(1.25);
+        }
+        for (PrimarySkillType skill : SkillCategory.BOTANY.skills()) {
+            assertThat(Specialization.xpMultiplier(profile, skill)).as("%s", skill)
+                    .isEqualTo(1.0);
+        }
         assertThat(Specialization.xpMultiplier(profile, PrimarySkillType.FISHING))
                 .isEqualTo(0.35);
         assertThat(Specialization.hasEmptySlot(profile)).isFalse();
@@ -86,53 +98,41 @@ class SpecializationTest extends MMOTestEnvironment {
     // --- choosing ---
 
     @Test
-    void choosingShouldFillAnEmptySlotAndKeepTheSkillsProgress() {
+    void choosingShouldKeepTheCategorysProgress() {
         profile.modifySkill(PrimarySkillType.FISHING, 12);
         profile.setSkillXpLevel(PrimarySkillType.FISHING, 500F);
 
         final Specialization.ChooseResult result = Specialization.choose(profile,
-                SpecializationSlot.SECONDARY, PrimarySkillType.FISHING);
+                SpecializationSlot.SECONDARY, SkillCategory.SURVIVALISM);
 
         assertThat(result).isEqualTo(Specialization.ChooseResult.SUCCESS);
         assertThat(profile.getSpecialization(SpecializationSlot.SECONDARY))
-                .isEqualTo(PrimarySkillType.FISHING);
+                .isEqualTo(SkillCategory.SURVIVALISM);
         assertThat(profile.getSkillLevel(PrimarySkillType.FISHING)).isEqualTo(12);
         assertThat(profile.getSkillXpLevelRaw(PrimarySkillType.FISHING)).isEqualTo(500F);
     }
 
     @Test
-    void choosingShouldNotReplaceAFilledSlot() {
-        Specialization.choose(profile, SpecializationSlot.PRIMARY, PrimarySkillType.MINING);
+    void choosingShouldNotReplaceAChosenSpecialization() {
+        Specialization.choose(profile, SpecializationSlot.PRIMARY, SkillCategory.METALLURGY);
 
         final Specialization.ChooseResult result = Specialization.choose(profile,
-                SpecializationSlot.PRIMARY, PrimarySkillType.SWORDS);
+                SpecializationSlot.PRIMARY, SkillCategory.MELEE);
 
         assertThat(result).isEqualTo(Specialization.ChooseResult.SLOT_FILLED);
         assertThat(profile.getSpecialization(SpecializationSlot.PRIMARY))
-                .isEqualTo(PrimarySkillType.MINING);
+                .isEqualTo(SkillCategory.METALLURGY);
     }
 
     @Test
-    void choosingShouldNotPutTheSameSkillInBothSlots() {
-        Specialization.choose(profile, SpecializationSlot.PRIMARY, PrimarySkillType.MINING);
+    void choosingShouldNotMakeOneCategoryBothSpecializations() {
+        Specialization.choose(profile, SpecializationSlot.PRIMARY, SkillCategory.METALLURGY);
 
         final Specialization.ChooseResult result = Specialization.choose(profile,
-                SpecializationSlot.SECONDARY, PrimarySkillType.MINING);
+                SpecializationSlot.SECONDARY, SkillCategory.METALLURGY);
 
-        assertThat(result).isEqualTo(Specialization.ChooseResult.SKILL_IN_OTHER_SLOT);
+        assertThat(result).isEqualTo(Specialization.ChooseResult.CATEGORY_IN_OTHER_SLOT);
         assertThat(profile.getSpecialization(SpecializationSlot.SECONDARY)).isNull();
-    }
-
-    @Test
-    void choosingShouldRejectSkillsMissingFromThisMinecraftVersion() {
-        // A server older than 1.21.11 has no Spears
-        when(minecraftGameVersion.isAtLeast(1, 21, 11)).thenReturn(false);
-
-        final Specialization.ChooseResult result = Specialization.choose(profile,
-                SpecializationSlot.PRIMARY, PrimarySkillType.SPEARS);
-
-        assertThat(result).isEqualTo(Specialization.ChooseResult.SKILL_UNAVAILABLE);
-        assertThat(profile.getSpecialization(SpecializationSlot.PRIMARY)).isNull();
     }
 
     // --- abandoning ---
@@ -156,81 +156,116 @@ class SpecializationTest extends MMOTestEnvironment {
             "100, 0, 28, 30600",
             "1000, 0, 312, 472400"
     })
-    void abandoningShouldKeepTenPercentOfTotalXp(int level, float xp, int expectedLevel,
-            float expectedXp) {
+    void abandoningShouldKeepTenPercentOfEachSkillsTotalXp(int level, float xp,
+            int expectedLevel, float expectedXp) {
         profile.modifySkill(PrimarySkillType.WOODCUTTING, level);
         profile.setSkillXpLevel(PrimarySkillType.WOODCUTTING, xp);
-        Specialization.choose(profile, SpecializationSlot.SECONDARY,
-                PrimarySkillType.WOODCUTTING);
+        Specialization.choose(profile, SpecializationSlot.SECONDARY, SkillCategory.BOTANY);
 
         final Specialization.AbandonPreview preview = Specialization.previewAbandon(profile,
-                PrimarySkillType.WOODCUTTING);
+                SkillCategory.BOTANY);
 
         assertThat(preview).isNotNull();
-        assertThat(preview.oldLevel()).isEqualTo(level);
-        assertThat(preview.newLevel()).isEqualTo(expectedLevel);
-        assertThat(preview.newXp()).isEqualTo(expectedXp);
         assertThat(preview.slot()).isEqualTo(SpecializationSlot.SECONDARY);
+        final Specialization.SkillAbandon woodcutting =
+                abandonOf(preview, PrimarySkillType.WOODCUTTING);
+        assertThat(woodcutting.oldLevel()).isEqualTo(level);
+        assertThat(woodcutting.newLevel()).isEqualTo(expectedLevel);
+        assertThat(woodcutting.newXp()).isEqualTo(expectedXp);
     }
 
     @Test
-    void previewShouldNotChangeAnything() {
+    void abandoningShouldCutEverySkillInTheCategoryAndNothingElse() {
+        profile.modifySkill(PrimarySkillType.MINING, 40);
+        profile.modifySkill(PrimarySkillType.SMELTING, 10);
+        profile.modifySkill(PrimarySkillType.EXCAVATION, 6);
         profile.modifySkill(PrimarySkillType.WOODCUTTING, 40);
-        Specialization.choose(profile, SpecializationSlot.SECONDARY,
-                PrimarySkillType.WOODCUTTING);
-
-        Specialization.previewAbandon(profile, PrimarySkillType.WOODCUTTING);
-
-        assertThat(profile.getSkillLevel(PrimarySkillType.WOODCUTTING)).isEqualTo(40);
-        assertThat(profile.getSpecialization(SpecializationSlot.SECONDARY))
-                .isEqualTo(PrimarySkillType.WOODCUTTING);
-    }
-
-    @Test
-    void applyingAbandonShouldSetTheNewLevelAndEmptyOnlyThatSlot() {
-        profile.modifySkill(PrimarySkillType.WOODCUTTING, 40);
-        Specialization.choose(profile, SpecializationSlot.PRIMARY, PrimarySkillType.MINING);
-        Specialization.choose(profile, SpecializationSlot.SECONDARY,
-                PrimarySkillType.WOODCUTTING);
+        Specialization.choose(profile, SpecializationSlot.PRIMARY, SkillCategory.METALLURGY);
+        Specialization.choose(profile, SpecializationSlot.SECONDARY, SkillCategory.BOTANY);
 
         Specialization.applyAbandon(profile,
-                Specialization.previewAbandon(profile, PrimarySkillType.WOODCUTTING));
+                Specialization.previewAbandon(profile, SkillCategory.METALLURGY));
 
-        assertThat(profile.getSkillLevel(PrimarySkillType.WOODCUTTING)).isEqualTo(9);
-        assertThat(profile.getSkillXpLevelRaw(PrimarySkillType.WOODCUTTING)).isEqualTo(27_500F);
-        assertThat(profile.getSpecialization(SpecializationSlot.SECONDARY)).isNull();
+        assertThat(profile.getSkillLevel(PrimarySkillType.MINING)).isEqualTo(9);
+        assertThat(profile.getSkillXpLevelRaw(PrimarySkillType.MINING)).isEqualTo(27_500F);
+        assertThat(profile.getSkillLevel(PrimarySkillType.SMELTING)).isEqualTo(1);
+        assertThat(profile.getSkillLevel(PrimarySkillType.EXCAVATION)).isZero();
+        // Only the abandoned category changes
+        assertThat(profile.getSkillLevel(PrimarySkillType.WOODCUTTING)).isEqualTo(40);
+        assertThat(profile.getSpecialization(SpecializationSlot.PRIMARY)).isNull();
+        assertThat(profile.getSpecialization(SpecializationSlot.SECONDARY))
+                .isEqualTo(SkillCategory.BOTANY);
+    }
+
+    @Test
+    void previewShouldListTheCategorysSkillsWithoutChangingAnything() {
+        profile.modifySkill(PrimarySkillType.MINING, 40);
+        Specialization.choose(profile, SpecializationSlot.PRIMARY, SkillCategory.METALLURGY);
+
+        final Specialization.AbandonPreview preview =
+                Specialization.previewAbandon(profile, SkillCategory.METALLURGY);
+
+        assertThat(preview.skills()).extracting(Specialization.SkillAbandon::skill)
+                .containsExactly(PrimarySkillType.MINING, PrimarySkillType.SMELTING,
+                        PrimarySkillType.EXCAVATION);
+        assertThat(profile.getSkillLevel(PrimarySkillType.MINING)).isEqualTo(40);
         assertThat(profile.getSpecialization(SpecializationSlot.PRIMARY))
-                .isEqualTo(PrimarySkillType.MINING);
+                .isEqualTo(SkillCategory.METALLURGY);
+    }
+
+    @Test
+    void previewShouldLeaveOutSkillsMissingFromThisMinecraftVersion() {
+        // A server older than 1.21.11 has no Spears
+        when(minecraftGameVersion.isAtLeast(1, 21, 11)).thenReturn(false);
+        Specialization.choose(profile, SpecializationSlot.PRIMARY, SkillCategory.MELEE);
+
+        final Specialization.AbandonPreview preview =
+                Specialization.previewAbandon(profile, SkillCategory.MELEE);
+
+        assertThat(preview.skills()).extracting(Specialization.SkillAbandon::skill)
+                .containsExactly(PrimarySkillType.SWORDS, PrimarySkillType.AXES,
+                        PrimarySkillType.MACES);
     }
 
     @Test
     void abandoningThePrimaryShouldNotMoveTheSecondaryUp() {
-        Specialization.choose(profile, SpecializationSlot.PRIMARY, PrimarySkillType.MINING);
-        Specialization.choose(profile, SpecializationSlot.SECONDARY, PrimarySkillType.SWORDS);
+        Specialization.choose(profile, SpecializationSlot.PRIMARY, SkillCategory.METALLURGY);
+        Specialization.choose(profile, SpecializationSlot.SECONDARY, SkillCategory.MELEE);
 
         Specialization.applyAbandon(profile,
-                Specialization.previewAbandon(profile, PrimarySkillType.MINING));
+                Specialization.previewAbandon(profile, SkillCategory.METALLURGY));
 
         assertThat(profile.getSpecialization(SpecializationSlot.PRIMARY)).isNull();
         assertThat(profile.getSpecialization(SpecializationSlot.SECONDARY))
-                .isEqualTo(PrimarySkillType.SWORDS);
+                .isEqualTo(SkillCategory.MELEE);
     }
 
     @Test
-    void onlyChosenSkillsCanBeAbandoned() {
-        assertThat(Specialization.previewAbandon(profile, PrimarySkillType.MINING)).isNull();
+    void onlyChosenCategoriesCanBeAbandoned() {
+        assertThat(Specialization.previewAbandon(profile, SkillCategory.METALLURGY)).isNull();
     }
 
     @Test
-    void clearSlotHoldingShouldEmptyTheSlotWithThatSkill() {
-        Specialization.choose(profile, SpecializationSlot.PRIMARY, PrimarySkillType.MINING);
-        Specialization.choose(profile, SpecializationSlot.SECONDARY, PrimarySkillType.SWORDS);
+    void resettingASkillShouldClearTheSpecializationItsCategoryIsIn() {
+        Specialization.choose(profile, SpecializationSlot.PRIMARY, SkillCategory.METALLURGY);
+        Specialization.choose(profile, SpecializationSlot.SECONDARY, SkillCategory.MELEE);
 
-        Specialization.clearSlotHolding(profile, PrimarySkillType.SWORDS);
+        Specialization.clearSlotHolding(profile, PrimarySkillType.AXES);
         Specialization.clearSlotHolding(profile, PrimarySkillType.FISHING); // not chosen
 
         assertThat(profile.getSpecialization(SpecializationSlot.PRIMARY))
-                .isEqualTo(PrimarySkillType.MINING);
+                .isEqualTo(SkillCategory.METALLURGY);
+        assertThat(profile.getSpecialization(SpecializationSlot.SECONDARY)).isNull();
+    }
+
+    @Test
+    void loadingTheSameCategoryTwiceShouldKeepOnlyThePrimary() {
+        // Older builds stored single skills; Mining and Smelting both read as Metallurgy
+        profile.loadSpecialization(SkillCategory.fromStoredName("MINING"),
+                SkillCategory.fromStoredName("SMELTING"));
+
+        assertThat(profile.getSpecialization(SpecializationSlot.PRIMARY))
+                .isEqualTo(SkillCategory.METALLURGY);
         assertThat(profile.getSpecialization(SpecializationSlot.SECONDARY)).isNull();
     }
 }

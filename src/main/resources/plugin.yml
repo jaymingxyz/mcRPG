@@ -2,8 +2,8 @@ name: mcRPG
 version: ${project.version}
 description: >
     mcRPG is an RPG plugin based on mcMMO. Players pick a Primary and a Secondary
-    Specialization from nineteen skills in six categories, and every other skill trains
-    more slowly.
+    Specialization, each a whole category of skills, and every other skill trains more
+    slowly.
     mcRPG is a fork of mcMMO by nossr50 and the mcMMO team, released under GPLv3.
 
 author: nossr50
@@ -151,26 +151,28 @@ commands:
         description: Reloads locale
         permission: mcrpg.commands.reloadlocale
     # mcRPG: Specializations
-    chooseskill:
+    choosespecialization:
+        aliases: [ csp ]
         description: Choose your Primary and Secondary Specializations
-        permission: mcrpg.commands.chooseskill
-    abandonskill:
+        permission: mcrpg.commands.choosespecialization
+    abandonspecialization:
+        aliases: [ asp ]
         description: Abandon your Primary or Secondary Specialization
-        permission: mcrpg.commands.abandonskill
-    rpgsetskill:
+        permission: mcrpg.commands.abandonspecialization
+    rpgsetspecialization:
         description: Set or clear a player's Primary or Secondary Specialization
-        permission: mcrpg.commands.setskill
+        permission: mcrpg.commands.setspecialization
 permissions:
     # mcRPG: Specializations
-    mcrpg.commands.chooseskill:
+    mcrpg.commands.choosespecialization:
         default: true
-        description: Allows choosing your Primary and Secondary skills
-    mcrpg.commands.abandonskill:
+        description: Allows choosing your Primary and Secondary Specializations
+    mcrpg.commands.abandonspecialization:
         default: true
-        description: Allows abandoning your Primary or Secondary skill
-    mcrpg.commands.setskill:
+        description: Allows abandoning your Primary or Secondary Specialization
+    mcrpg.commands.setspecialization:
         default: op
-        description: Allows setting or clearing any player's Primary or Secondary skill
+        description: Allows setting or clearing any player's Primary or Secondary Specialization
     #mcrpg.defaults is the intended default permission, give this to your players for the intended experience
     mcrpg.defaults:
         default: true

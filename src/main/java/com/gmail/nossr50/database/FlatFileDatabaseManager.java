@@ -15,6 +15,7 @@ import com.gmail.nossr50.datatypes.player.UniqueDataType;
 import com.gmail.nossr50.datatypes.skills.PrimarySkillType;
 import com.gmail.nossr50.datatypes.skills.SuperAbilityType;
 import com.gmail.nossr50.mcMMO;
+import com.gmail.nossr50.mcrpg.specialization.SkillCategory;
 import com.gmail.nossr50.mcrpg.specialization.SpecializationSlot;
 import com.gmail.nossr50.util.LogUtils;
 import com.gmail.nossr50.util.Misc;
@@ -32,7 +33,6 @@ import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
@@ -149,7 +149,7 @@ public final class FlatFileDatabaseManager implements DatabaseManager {
     public static final int SKILLS_SALVAGE = 59;
     public static final int EXP_SMELTING = 60;
     public static final int SKILLS_SMELTING = 61;
-    // mcRPG: specialization slots, stored as a skill name, or NONE for an empty slot
+    // mcRPG: Specializations, stored as a category name, or NONE when not chosen
     public static final int PRIMARY_SKILL = 62;
     public static final int SECONDARY_SKILL = 63;
     public static final String EMPTY_SPECIALIZATION = "NONE";
@@ -608,7 +608,7 @@ public final class FlatFileDatabaseManager implements DatabaseManager {
         appendInt(out, profile.getSkillXpLevel(PrimarySkillType.SMELTING));
         appendInt(out, profile.getSkillLevel(PrimarySkillType.SMELTING));
 
-        // mcRPG: specialization slots
+        // mcRPG: Specializations
         appendString(out, specializationToField(
                 profile.getSpecialization(SpecializationSlot.PRIMARY)));
         appendString(out, specializationToField(
@@ -1384,37 +1384,30 @@ public final class FlatFileDatabaseManager implements DatabaseManager {
 
         final PlayerProfile profile = new PlayerProfile(username, uuid, skills, skillsXp,
                 skillsDATS, scoreboardTipsShown, uniquePlayerDataMap, lastLogin);
-        // mcRPG: specialization slots (missing on rows written before they existed)
+        // mcRPG: Specializations (missing on rows written before they existed)
         profile.loadSpecialization(
                 specializationFromField(character, PRIMARY_SKILL),
                 specializationFromField(character, SECONDARY_SKILL));
         return profile;
     }
 
-    /* mcRPG: specialization slot fields */
+    /* mcRPG: Specialization fields */
 
-    static @NotNull String specializationToField(@Nullable PrimarySkillType skill) {
-        return skill == null ? EMPTY_SPECIALIZATION : skill.name();
+    static @NotNull String specializationToField(@Nullable SkillCategory category) {
+        return category == null ? EMPTY_SPECIALIZATION : category.name();
     }
 
     /**
-     * Reads a specialization slot field. Missing fields, NONE, and anything that isn't a
-     * skill name all mean an empty slot.
+     * Reads a Specialization field. Missing fields, NONE, and anything that isn't a category
+     * name all mean it isn't chosen. A skill name, stored by builds before Specializations
+     * were categories, reads as that skill's category.
      */
-    static @Nullable PrimarySkillType specializationFromField(@NotNull String[] character,
+    static @Nullable SkillCategory specializationFromField(@NotNull String[] character,
             int index) {
         if (index >= character.length || character[index] == null) {
             return null;
         }
-        final String value = character[index].trim();
-        if (value.isEmpty() || value.equalsIgnoreCase(EMPTY_SPECIALIZATION)) {
-            return null;
-        }
-        try {
-            return PrimarySkillType.valueOf(value.toUpperCase(Locale.ROOT));
-        } catch (IllegalArgumentException ignored) {
-            return null;
-        }
+        return SkillCategory.fromStoredName(character[index]);
     }
 
     private void tryLoadSkillCooldownFromRawData(

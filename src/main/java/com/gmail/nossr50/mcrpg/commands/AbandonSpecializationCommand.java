@@ -1,15 +1,16 @@
 package com.gmail.nossr50.mcrpg.commands;
 
+import static com.gmail.nossr50.mcrpg.specialization.SpecializationDisplay.categoryName;
 import static com.gmail.nossr50.mcrpg.specialization.SpecializationDisplay.skillName;
 import static com.gmail.nossr50.mcrpg.specialization.SpecializationDisplay.slotName;
 
 import com.gmail.nossr50.datatypes.experience.XPGainReason;
 import com.gmail.nossr50.datatypes.player.McMMOPlayer;
 import com.gmail.nossr50.datatypes.player.PlayerProfile;
-import com.gmail.nossr50.datatypes.skills.PrimarySkillType;
 import com.gmail.nossr50.events.experience.McMMOPlayerLevelDownEvent;
 import com.gmail.nossr50.locale.LocaleLoader;
 import com.gmail.nossr50.mcMMO;
+import com.gmail.nossr50.mcrpg.specialization.SkillCategory;
 import com.gmail.nossr50.mcrpg.specialization.Specialization;
 import com.gmail.nossr50.mcrpg.specialization.SpecializationDisplay;
 import com.gmail.nossr50.mcrpg.specialization.SpecializationSlot;
@@ -17,7 +18,6 @@ import com.gmail.nossr50.util.commands.CommandUtils;
 import com.gmail.nossr50.util.player.UserManager;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -28,18 +28,20 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.VisibleForTesting;
 
 /**
- * /abandonskill &lt;skill&gt; [confirm] removes a skill from the player's Primary or Secondary
- * slot. The skill keeps only part of its total XP (10% by default), so the first run only
- * shows a warning, and the player must repeat the command with "confirm" before it expires.
+ * /abandonspecialization &lt;category|primary|secondary&gt; [confirm] (alias /asp) clears one
+ * of the player's Specializations. Every skill in the category keeps only part of its total XP
+ * (10% by default), so the first run only shows a warning, and the player must repeat the
+ * command with "confirm" before it expires.
  */
-public class AbandonSkillCommand implements TabExecutor {
+public class AbandonSpecializationCommand implements TabExecutor {
     private static final String CONFIRM = "confirm";
 
     /** A warning shown to a player, waiting for them to confirm. */
-    record PendingAbandon(@NotNull PrimarySkillType skill, long expiresAtMillis) {
+    record PendingAbandon(@NotNull SkillCategory category, long expiresAtMillis) {
     }
 
     private static final Map<UUID, PendingAbandon> PENDING = new ConcurrentHashMap<>();
@@ -67,24 +69,24 @@ public class AbandonSkillCommand implements TabExecutor {
             return true;
         }
 
-        if (CommandUtils.isInvalidSkill(player, args[0])) {
+        final PlayerProfile profile = mmoPlayer.getProfile();
+        final SkillCategory category = resolveCategory(player, profile, args[0]);
+        if (category == null) {
             return true;
         }
-        final PrimarySkillType skill = mcMMO.p.getSkillTools().matchSkill(args[0]);
-        final PlayerProfile profile = mmoPlayer.getProfile();
 
         final Specialization.AbandonPreview preview =
-                Specialization.previewAbandon(profile, skill);
+                Specialization.previewAbandon(profile, category);
         if (preview == null) {
             player.sendMessage(LocaleLoader.getString("mcRPG.Abandon.NotSelected",
-                    skillName(skill)));
+                    categoryName(category)));
             return true;
         }
 
         final UUID playerId = player.getUniqueId();
         final PendingAbandon pending = PENDING.get(playerId);
         final long now = clock.getAsLong();
-        if (!confirming || pending == null || pending.skill() != skill
+        if (!confirming || pending == null || pending.category() != category
                 || now > pending.expiresAtMillis()) {
             warn(player, preview, now);
             return true;
@@ -95,37 +97,71 @@ public class AbandonSkillCommand implements TabExecutor {
         return true;
     }
 
+    /**
+     * The category the player named, or the one chosen as their primary or secondary
+     * Specialization. Tells the player and returns null if there isn't one.
+     */
+    private static @Nullable SkillCategory resolveCategory(@NotNull Player player,
+            @NotNull PlayerProfile profile, @NotNull String argument) {
+        final SpecializationSlot slot = SpecializationSlot.fromCommandName(argument);
+        if (slot != null) {
+            final SkillCategory chosen = profile.getSpecialization(slot);
+            if (chosen == null) {
+                player.sendMessage(LocaleLoader.getString("mcRPG.Abandon.NoneChosen",
+                        slotName(slot)));
+            }
+            return chosen;
+        }
+
+        final SkillCategory category = SkillCategory.fromCommandName(argument);
+        if (category == null) {
+            player.sendMessage(LocaleLoader.getString("mcRPG.Choose.InvalidCategory", argument,
+                    ChooseSpecializationCommand.categoryNamesText()));
+        }
+        return category;
+    }
+
     private void warn(@NotNull Player player, @NotNull Specialization.AbandonPreview preview,
             long now) {
         final int timeoutSeconds = mcMMO.p.getGeneralConfig().getAbandonConfirmTimeoutSeconds();
         PENDING.put(player.getUniqueId(),
-                new PendingAbandon(preview.skill(), now + timeoutSeconds * 1000L));
+                new PendingAbandon(preview.category(), now + timeoutSeconds * 1000L));
 
         player.sendMessage(LocaleLoader.getString("mcRPG.Abandon.Warning",
-                skillName(preview.skill()), preview.oldLevel(), preview.newLevel(),
-                SpecializationDisplay.formatNumber(
-                        mcMMO.p.getGeneralConfig().getAbandonXpKeptPercent())));
+                categoryName(preview.category()), keptPercentText()));
+        for (Specialization.SkillAbandon each : preview.skills()) {
+            player.sendMessage(LocaleLoader.getString("mcRPG.Abandon.WarningSkill",
+                    skillName(each.skill()), each.oldLevel(), each.newLevel()));
+        }
         player.sendMessage(LocaleLoader.getString("mcRPG.Abandon.ConfirmPrompt",
-                preview.skill().name().toLowerCase(Locale.ROOT), timeoutSeconds));
+                preview.category().commandName(), timeoutSeconds));
     }
 
     private void abandon(@NotNull Player player, @NotNull PlayerProfile profile,
             @NotNull Specialization.AbandonPreview preview) {
-        // Let other plugins veto the level loss before anything changes
-        if (preview.levelsLost() > 0) {
+        // Let other plugins veto any skill's level loss before anything changes
+        for (Specialization.SkillAbandon each : preview.skills()) {
+            if (each.levelsLost() <= 0) {
+                continue;
+            }
             final McMMOPlayerLevelDownEvent event = new McMMOPlayerLevelDownEvent(player,
-                    preview.skill(), preview.levelsLost(), XPGainReason.COMMAND);
+                    each.skill(), each.levelsLost(), XPGainReason.COMMAND);
             Bukkit.getPluginManager().callEvent(event);
             if (event.isCancelled()) {
                 player.sendMessage(LocaleLoader.getString("mcRPG.Abandon.Cancelled",
-                        skillName(preview.skill())));
+                        categoryName(preview.category())));
                 return;
             }
         }
 
         Specialization.applyAbandon(profile, preview);
         player.sendMessage(LocaleLoader.getString("mcRPG.Abandon.Success",
-                skillName(preview.skill()), slotName(preview.slot()), preview.newLevel()));
+                categoryName(preview.category()), slotName(preview.slot()), keptPercentText()));
+    }
+
+    private static @NotNull String keptPercentText() {
+        return SpecializationDisplay.formatNumber(
+                mcMMO.p.getGeneralConfig().getAbandonXpKeptPercent());
     }
 
     @Override
@@ -141,15 +177,15 @@ public class AbandonSkillCommand implements TabExecutor {
             }
             final List<String> chosen = new ArrayList<>();
             for (SpecializationSlot slot : SpecializationSlot.values()) {
-                final PrimarySkillType skill = mmoPlayer.getProfile().getSpecialization(slot);
-                if (skill != null) {
-                    chosen.add(skill.name().toLowerCase(Locale.ROOT));
+                final SkillCategory category = mmoPlayer.getProfile().getSpecialization(slot);
+                if (category != null) {
+                    chosen.add(category.commandName());
                 }
             }
-            return ChooseSkillCommand.startingWith(args[0], chosen);
+            return ChooseSpecializationCommand.startingWith(args[0], chosen);
         }
         if (args.length == 2) {
-            return ChooseSkillCommand.startingWith(args[1], List.of(CONFIRM));
+            return ChooseSpecializationCommand.startingWith(args[1], List.of(CONFIRM));
         }
         return List.of();
     }

@@ -9,9 +9,49 @@ import java.util.Properties;
 import org.junit.jupiter.api.Test;
 
 /**
- * mcRPG's six Specialization categories, and the text the menu and /rpgstats show for them.
+ * mcRPG's six skill categories (each Specialization is one of them), how they're named in
+ * commands and storage, and the text the menu and /rpgstats show for them.
  */
 class SkillCategoryTest {
+    @Test
+    void commandNamesShouldBeTheLowercaseCategory() {
+        assertThat(SkillCategory.METALLURGY.commandName()).isEqualTo("metallurgy");
+        for (SkillCategory category : SkillCategory.values()) {
+            assertThat(SkillCategory.fromCommandName(category.commandName())).isEqualTo(category);
+            assertThat(SkillCategory.fromCommandName(category.name())).isEqualTo(category);
+        }
+        assertThat(SkillCategory.fromCommandName("mining")).isNull();
+        assertThat(SkillCategory.fromCommandName("gathering")).isNull();
+    }
+
+    @Test
+    void storedCategoryNamesShouldReadBack() {
+        for (SkillCategory category : SkillCategory.values()) {
+            assertThat(SkillCategory.fromStoredName(category.name())).isEqualTo(category);
+        }
+        assertThat(SkillCategory.fromStoredName(" botany ")).isEqualTo(SkillCategory.BOTANY);
+    }
+
+    @Test
+    void storedSkillNamesFromOlderBuildsShouldReadAsTheirCategory() {
+        // Before 2026-09-27 a Specialization was one skill
+        assertThat(SkillCategory.fromStoredName("MINING")).isEqualTo(SkillCategory.METALLURGY);
+        assertThat(SkillCategory.fromStoredName("UNARMED"))
+                .isEqualTo(SkillCategory.SURVIVALISM);
+        for (PrimarySkillType skill : PrimarySkillType.values()) {
+            assertThat(SkillCategory.fromStoredName(skill.name()))
+                    .isEqualTo(SkillCategory.of(skill));
+        }
+    }
+
+    @Test
+    void emptyOrUnknownStoredNamesShouldMeanNotChosen() {
+        assertThat(SkillCategory.fromStoredName(null)).isNull();
+        assertThat(SkillCategory.fromStoredName("")).isNull();
+        assertThat(SkillCategory.fromStoredName("NONE")).isNull();
+        assertThat(SkillCategory.fromStoredName("GATHERING")).isNull();
+    }
+
     @Test
     void categoriesShouldHoldTheirSkillsInDisplayOrder() {
         assertThat(SkillCategory.MELEE.skills()).containsExactly(PrimarySkillType.SWORDS,

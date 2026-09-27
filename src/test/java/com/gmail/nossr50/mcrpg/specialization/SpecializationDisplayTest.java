@@ -18,8 +18,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 /**
- * What players see about specialization: /mcstats tags, XP bar tags, the login reminder text,
- * placeholders, and /skillreset clearing a slot.
+ * What players see about Specializations: /rpgstats tags, XP bar tags, the login reminder
+ * text, placeholders, and /rpgskillreset clearing a Specialization.
  */
 class SpecializationDisplayTest extends MMOTestEnvironment {
     private static final Logger logger = Logger.getLogger(SpecializationDisplayTest.class.getName());
@@ -51,67 +51,79 @@ class SpecializationDisplayTest extends MMOTestEnvironment {
     }
 
     @Test
-    void statsTagShouldShowRoleAndRate() {
-        profile.setSpecialization(SpecializationSlot.PRIMARY, PrimarySkillType.MINING);
-        profile.setSpecialization(SpecializationSlot.SECONDARY, PrimarySkillType.SMELTING);
+    void statsTagShouldShowTheRoleAndRateOfTheSkillsCategory() {
+        profile.setSpecialization(SpecializationSlot.PRIMARY, SkillCategory.METALLURGY);
+        profile.setSpecialization(SpecializationSlot.SECONDARY, SkillCategory.BOTANY);
 
-        assertThat(plain(SpecializationDisplay.statsTag(profile, PrimarySkillType.MINING)))
-                .isEqualTo("(Primary, 1.25x XP)");
         assertThat(plain(SpecializationDisplay.statsTag(profile, PrimarySkillType.SMELTING)))
+                .isEqualTo("(Primary, 1.25x XP)");
+        assertThat(plain(SpecializationDisplay.statsTag(profile, PrimarySkillType.ALCHEMY)))
                 .isEqualTo("(Secondary, 1x XP)");
         assertThat(plain(SpecializationDisplay.statsTag(profile, PrimarySkillType.FISHING)))
                 .isEqualTo("(0.35x XP)");
     }
 
     @Test
-    void xpBarTitleShouldOnlyTagChosenSkills() {
-        profile.setSpecialization(SpecializationSlot.PRIMARY, PrimarySkillType.MINING);
+    void categoriesShouldBeShownByNameWithTheirSkills() {
+        assertThat(SpecializationDisplay.categoryName(SkillCategory.METALLURGY))
+                .isEqualTo("Metallurgy");
+        assertThat(SpecializationDisplay.skillList(SkillCategory.BLACKSMITHING))
+                .isEqualTo("Repair, Salvage");
 
-        assertThat(SpecializationDisplay.xpBarTitle("Mining Lv.5", profile,
-                PrimarySkillType.MINING)).isEqualTo("Mining Lv.5 (Primary)");
+        profile.setSpecialization(SpecializationSlot.PRIMARY, SkillCategory.METALLURGY);
+        assertThat(plain(SpecializationDisplay.summary(profile)))
+                .isEqualTo("Specializations: Primary: Metallurgy | Secondary: none");
+    }
+
+    @Test
+    void xpBarTitleShouldOnlyTagSkillsInAChosenCategory() {
+        profile.setSpecialization(SpecializationSlot.PRIMARY, SkillCategory.METALLURGY);
+
+        assertThat(SpecializationDisplay.xpBarTitle("Excavation Lv.5", profile,
+                PrimarySkillType.EXCAVATION)).isEqualTo("Excavation Lv.5 (Primary)");
         assertThat(SpecializationDisplay.xpBarTitle("Fishing Lv.5", profile,
                 PrimarySkillType.FISHING)).isEqualTo("Fishing Lv.5");
     }
 
     @Test
-    void reminderShouldNameTheEmptySlots() {
+    void reminderShouldNameTheMissingSpecializations() {
         assertThat(plain(LoginReminder.reminderText(profile)))
                 .isEqualTo("You haven't chosen your Primary and Secondary Specializations yet.");
 
-        profile.setSpecialization(SpecializationSlot.PRIMARY, PrimarySkillType.MINING);
+        profile.setSpecialization(SpecializationSlot.PRIMARY, SkillCategory.METALLURGY);
         assertThat(plain(LoginReminder.reminderText(profile)))
                 .isEqualTo("You haven't chosen a Secondary Specialization yet.");
 
-        profile.setSpecialization(SpecializationSlot.SECONDARY, PrimarySkillType.SWORDS);
+        profile.setSpecialization(SpecializationSlot.SECONDARY, SkillCategory.MELEE);
         assertThat(LoginReminder.reminderText(profile)).isNull();
     }
 
     @Test
-    void placeholdersShouldShowTheChosenSkills() {
+    void placeholdersShouldShowTheChosenCategories() {
         when(UserManager.getPlayer(player)).thenReturn(mmoPlayer);
         final SpecializationPlaceholder primary =
                 new SpecializationPlaceholder(SpecializationSlot.PRIMARY);
         final SpecializationPlaceholder secondary =
                 new SpecializationPlaceholder(SpecializationSlot.SECONDARY);
-        profile.setSpecialization(SpecializationSlot.PRIMARY, PrimarySkillType.MINING);
+        profile.setSpecialization(SpecializationSlot.PRIMARY, SkillCategory.METALLURGY);
 
-        assertThat(primary.getName()).isEqualTo("primary_skill");
-        assertThat(secondary.getName()).isEqualTo("secondary_skill");
-        assertThat(primary.process(player, "")).isEqualTo("Mining");
+        assertThat(primary.getName()).isEqualTo("primary_specialization");
+        assertThat(secondary.getName()).isEqualTo("secondary_specialization");
+        assertThat(primary.process(player, "")).isEqualTo("Metallurgy");
         assertThat(secondary.process(player, "")).isEmpty();
     }
 
     @Test
-    void skillResetShouldAlsoEmptyTheSlotHoldingThatSkill() {
+    void skillResetShouldAlsoClearTheSpecializationItsCategoryIsIn() {
         profile.modifySkill(PrimarySkillType.MINING, 30);
-        profile.setSpecialization(SpecializationSlot.PRIMARY, PrimarySkillType.MINING);
-        profile.setSpecialization(SpecializationSlot.SECONDARY, PrimarySkillType.SWORDS);
+        profile.setSpecialization(SpecializationSlot.PRIMARY, SkillCategory.METALLURGY);
+        profile.setSpecialization(SpecializationSlot.SECONDARY, SkillCategory.MELEE);
 
         SkillresetTestAccess.reset(player, profile, PrimarySkillType.MINING);
 
         assertThat(profile.getSkillLevel(PrimarySkillType.MINING)).isZero();
         assertThat(profile.getSpecialization(SpecializationSlot.PRIMARY)).isNull();
         assertThat(profile.getSpecialization(SpecializationSlot.SECONDARY))
-                .isEqualTo(PrimarySkillType.SWORDS);
+                .isEqualTo(SkillCategory.MELEE);
     }
 }

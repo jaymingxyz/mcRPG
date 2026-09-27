@@ -288,7 +288,7 @@ public class PapiExpansion extends PlaceholderExpansion {
         // %mcmmo_xprate%
         registerPlaceholder(new XpRatePlaceholder(this));
 
-        // mcRPG: %mcrpg_primary_skill% and %mcrpg_secondary_skill%
+        // mcRPG: %mcrpg_primary_specialization% and %mcrpg_secondary_specialization%
         registerPlaceholder(new SpecializationPlaceholder(SpecializationSlot.PRIMARY));
         registerPlaceholder(new SpecializationPlaceholder(SpecializationSlot.SECONDARY));
 

@@ -686,17 +686,17 @@ Sounds:
     MasterVolume: 1.0
     
 #
-#  mcRPG: Specializations (Primary and Secondary)
+#  mcRPG: Specializations (Primary and Secondary, each a whole category of skills)
 ###
 Specialization:
     # Remind players on login if they haven't chosen a Primary or Secondary Specialization
     Login_Reminder: true
     Choose:
-        # Ask for confirmation before a skill chosen in the Specialization menu is locked in
+        # Ask for confirmation before a category chosen in the Specialization menu is locked in
         GUI_Confirmation: true
     Abandon:
-        # How long a player has to run /abandonskill <skill> confirm after the warning
+        # How long a player has to run /abandonspecialization <category> confirm after the warning
         Confirm_Timeout_Seconds: 30
-        # Share of its total XP an abandoned skill keeps. Its level is worked out again from
-        # the XP it keeps, so it keeps more than this share of its level
+        # Share of its total XP each skill in an abandoned Specialization keeps. Its level is
+        # worked out again from the XP it keeps, so it keeps more than this share of its level
         XP_Kept_Percent: 10

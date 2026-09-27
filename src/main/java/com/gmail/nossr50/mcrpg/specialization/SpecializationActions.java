@@ -1,59 +1,61 @@
 package com.gmail.nossr50.mcrpg.specialization;
 
-import static com.gmail.nossr50.mcrpg.specialization.SpecializationDisplay.skillName;
+import static com.gmail.nossr50.mcrpg.specialization.SpecializationDisplay.categoryName;
 import static com.gmail.nossr50.mcrpg.specialization.SpecializationDisplay.slotName;
 
 import com.gmail.nossr50.datatypes.player.PlayerProfile;
-import com.gmail.nossr50.datatypes.skills.PrimarySkillType;
 import com.gmail.nossr50.locale.LocaleLoader;
 import com.gmail.nossr50.mcMMO;
-import java.util.Locale;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * Player-facing specialization actions shared by /chooseskill and the Specialization menu,
- * so both enforce the same rules and send the same messages.
+ * Player-facing Specialization actions shared by /choosespecialization and the
+ * Specialization menu: permission checks and the messages that explain each result.
  */
 public final class SpecializationActions {
     private SpecializationActions() {
     }
 
     /**
-     * Whether the player may choose this skill at all: they need its skill permission.
+     * Whether the player may choose this category: they need the skill permission for at least
+     * one of its skills on this server.
      */
-    public static boolean canUseSkill(@NotNull Player player, @NotNull PrimarySkillType skill) {
-        return mcMMO.p.getSkillTools().doesPlayerHaveSkillPermission(player, skill);
+    public static boolean canUseCategory(@NotNull Player player,
+            @NotNull SkillCategory category) {
+        return category.availableSkills().stream().anyMatch(
+                skill -> mcMMO.p.getSkillTools().doesPlayerHaveSkillPermission(player, skill));
     }
 
     /**
-     * Tries to put a skill in a slot for this player and tells them the result.
+     * Tries to choose a category as one of the player's Specializations and tells them the
+     * result.
      *
-     * @return true if the slot was filled
+     * @return true if it was chosen
      */
     public static boolean tryChoose(@NotNull Player player, @NotNull PlayerProfile profile,
-            @NotNull SpecializationSlot slot, @NotNull PrimarySkillType skill) {
-        if (!canUseSkill(player, skill)) {
+            @NotNull SpecializationSlot slot, @NotNull SkillCategory category) {
+        if (!canUseCategory(player, category)) {
             player.sendMessage(LocaleLoader.getString("mcRPG.Choose.NoPermission",
-                    skillName(skill)));
+                    categoryName(category)));
             return false;
         }
 
-        final Specialization.ChooseResult result = Specialization.choose(profile, slot, skill);
+        final Specialization.ChooseResult result = Specialization.choose(profile, slot, category);
         switch (result) {
             case SUCCESS -> player.sendMessage(LocaleLoader.getString("mcRPG.Choose.Success",
-                    skillName(skill), slotName(slot),
+                    categoryName(category), slotName(slot),
+                    SpecializationDisplay.skillList(category),
                     SpecializationDisplay.multiplierText(slot.role())));
             case SLOT_FILLED -> {
-                final PrimarySkillType current = profile.getSpecialization(slot);
+                final SkillCategory current = profile.getSpecialization(slot);
                 player.sendMessage(LocaleLoader.getString("mcRPG.Choose.SlotFilled",
-                        slotName(slot), current == null ? "" : skillName(current),
-                        current == null ? "" : current.name().toLowerCase(Locale.ROOT)));
+                        slotName(slot), current == null ? "" : categoryName(current),
+                        current == null ? "" : current.commandName()));
             }
-            case SKILL_IN_OTHER_SLOT -> player.sendMessage(LocaleLoader.getString(
-                    "mcRPG.Choose.SkillInOtherSlot", skillName(skill), slotName(slot.other())));
-            case SKILL_UNAVAILABLE -> player.sendMessage(LocaleLoader.getString(
-                    "mcRPG.Choose.Unavailable", skillName(skill)));
+            case CATEGORY_IN_OTHER_SLOT -> player.sendMessage(LocaleLoader.getString(
+                    "mcRPG.Choose.CategoryInOtherSlot", categoryName(category),
+                    slotName(slot.other())));
         }
         return result == Specialization.ChooseResult.SUCCESS;
     }

@@ -1,12 +1,12 @@
 package com.gmail.nossr50.mcrpg.gui;
 
-import static com.gmail.nossr50.mcrpg.specialization.SpecializationDisplay.skillName;
+import static com.gmail.nossr50.mcrpg.specialization.SpecializationDisplay.categoryName;
 import static com.gmail.nossr50.mcrpg.specialization.SpecializationDisplay.slotName;
 
 import com.gmail.nossr50.datatypes.player.McMMOPlayer;
-import com.gmail.nossr50.datatypes.skills.PrimarySkillType;
 import com.gmail.nossr50.locale.LocaleLoader;
 import com.gmail.nossr50.mcMMO;
+import com.gmail.nossr50.mcrpg.specialization.SkillCategory;
 import com.gmail.nossr50.mcrpg.specialization.SpecializationActions;
 import com.gmail.nossr50.mcrpg.specialization.SpecializationDisplay;
 import com.gmail.nossr50.mcrpg.specialization.SpecializationSlot;
@@ -21,21 +21,21 @@ import org.bukkit.inventory.InventoryHolder;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * Asks the player to confirm a choice made in the Specialization menu, since a slot can only
- * be emptied again by abandoning the skill.
+ * Asks the player to confirm a choice made in the Specialization menu, since a Specialization
+ * can only be changed again by abandoning it.
  */
 public final class ConfirmChoiceMenu implements InventoryHolder {
     static final int SIZE = 27;
     static final int CONFIRM = 11;
-    static final int SKILL = 13;
+    static final int CATEGORY = 13;
     static final int CANCEL = 15;
 
     private final Inventory inventory;
-    private final PrimarySkillType skill;
+    private final SkillCategory category;
     private final SpecializationSlot slot;
 
-    private ConfirmChoiceMenu(@NotNull PrimarySkillType skill, @NotNull SpecializationSlot slot) {
-        this.skill = skill;
+    private ConfirmChoiceMenu(@NotNull SkillCategory category, @NotNull SpecializationSlot slot) {
+        this.category = category;
         this.slot = slot;
         this.inventory = Bukkit.createInventory(this, SIZE,
                 LocaleLoader.getString("mcRPG.Menu.Confirm.Title"));
@@ -45,10 +45,13 @@ public final class ConfirmChoiceMenu implements InventoryHolder {
         }
         final String kept = SpecializationDisplay.formatNumber(
                 mcMMO.p.getGeneralConfig().getAbandonXpKeptPercent());
-        inventory.setItem(SKILL, MenuItems.item(GuiConfig.getInstance().getIcon(skill),
-                LocaleLoader.getString("mcRPG.Menu.Confirm.Question", skillName(skill),
+        inventory.setItem(CATEGORY, MenuItems.item(
+                GuiConfig.getInstance().getCategoryIcon(category),
+                LocaleLoader.getString("mcRPG.Menu.Confirm.Question", categoryName(category),
                         slotName(slot)),
-                List.of(LocaleLoader.getString("mcRPG.Menu.Confirm.Warning1"),
+                List.of(LocaleLoader.getString("mcRPG.Menu.Category.Skills",
+                                SpecializationDisplay.skillList(category)),
+                        LocaleLoader.getString("mcRPG.Menu.Confirm.Warning1"),
                         LocaleLoader.getString("mcRPG.Menu.Confirm.Warning2", kept)),
                 true));
         inventory.setItem(CONFIRM, MenuItems.item(Material.LIME_CONCRETE,
@@ -58,11 +61,11 @@ public final class ConfirmChoiceMenu implements InventoryHolder {
     }
 
     /** Opens the confirmation on the player's own thread (required on Folia). */
-    static void open(@NotNull Player player, @NotNull PrimarySkillType skill,
+    static void open(@NotNull Player player, @NotNull SkillCategory category,
             @NotNull SpecializationSlot slot) {
         mcMMO.p.getFoliaLib().getScheduler().runAtEntity(player, task -> {
             if (player.isOnline()) {
-                player.openInventory(new ConfirmChoiceMenu(skill, slot).getInventory());
+                player.openInventory(new ConfirmChoiceMenu(category, slot).getInventory());
             }
         });
     }
@@ -93,7 +96,7 @@ public final class ConfirmChoiceMenu implements InventoryHolder {
 
         if (rawSlot == CONFIRM) {
             // Checks the rules again, since the player could have chosen in the meantime
-            SpecializationActions.tryChoose(player, mmoPlayer.getProfile(), slot, skill);
+            SpecializationActions.tryChoose(player, mmoPlayer.getProfile(), slot, category);
         }
         SkillSelectionMenu.open(player, mmoPlayer.getProfile());
     }

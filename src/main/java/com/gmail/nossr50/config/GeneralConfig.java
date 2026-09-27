@@ -1184,7 +1184,7 @@ public class GeneralConfig extends BukkitConfig {
         return config.getBoolean("Specialization.Choose.GUI_Confirmation", true);
     }
 
-    /** Seconds a player has to confirm /abandonskill after the warning (at least 1). */
+    /** Seconds a player has to confirm /abandonspecialization after the warning (at least 1). */
     public int getAbandonConfirmTimeoutSeconds() {
         return Math.max(1, config.getInt("Specialization.Abandon.Confirm_Timeout_Seconds", 30));
     }

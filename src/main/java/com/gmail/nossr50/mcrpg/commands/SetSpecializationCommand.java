@@ -1,11 +1,10 @@
 package com.gmail.nossr50.mcrpg.commands;
 
-import static com.gmail.nossr50.mcrpg.specialization.SpecializationDisplay.skillName;
+import static com.gmail.nossr50.mcrpg.specialization.SpecializationDisplay.categoryName;
 import static com.gmail.nossr50.mcrpg.specialization.SpecializationDisplay.slotName;
 
 import com.gmail.nossr50.datatypes.player.McMMOPlayer;
 import com.gmail.nossr50.datatypes.player.PlayerProfile;
-import com.gmail.nossr50.datatypes.skills.PrimarySkillType;
 import com.gmail.nossr50.locale.LocaleLoader;
 import com.gmail.nossr50.mcMMO;
 import com.gmail.nossr50.mcrpg.specialization.SkillCategory;
@@ -13,7 +12,6 @@ import com.gmail.nossr50.mcrpg.specialization.SpecializationSlot;
 import com.gmail.nossr50.util.commands.CommandUtils;
 import com.gmail.nossr50.util.player.UserManager;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -22,18 +20,19 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 /**
- * /rpgsetskill &lt;player&gt; &lt;primary|secondary&gt; &lt;skill|none&gt; lets admins set or
- * clear a player's slot without changing any skill progress, for example to fix a mistake.
- * Works on online and offline players, like mcMMO's other admin commands.
+ * /rpgsetspecialization &lt;player&gt; &lt;primary|secondary&gt; &lt;category|none&gt; lets
+ * admins set or clear a player's Specialization without changing any skill progress, for
+ * example to fix a mistake. Works on online and offline players, like mcMMO's other admin
+ * commands.
  */
-public class SetSkillCommand implements TabExecutor {
+public class SetSpecializationCommand implements TabExecutor {
     private static final String NONE = "none";
 
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command,
             @NotNull String label, String[] args) {
         if (args.length != 3) {
-            sender.sendMessage(LocaleLoader.getString("mcRPG.SetSkill.Usage"));
+            sender.sendMessage(LocaleLoader.getString("mcRPG.SetSpecialization.Usage"));
             return true;
         }
 
@@ -43,16 +42,14 @@ public class SetSkillCommand implements TabExecutor {
             return true;
         }
 
-        final @Nullable PrimarySkillType skill;
+        final @Nullable SkillCategory category;
         if (args[2].equalsIgnoreCase(NONE)) {
-            skill = null;
-        } else if (CommandUtils.isInvalidSkill(sender, args[2])) {
-            return true;
+            category = null;
         } else {
-            skill = mcMMO.p.getSkillTools().matchSkill(args[2]);
-            if (!SkillCategory.isAvailable(skill)) {
-                sender.sendMessage(LocaleLoader.getString("mcRPG.Choose.Unavailable",
-                        skillName(skill)));
+            category = SkillCategory.fromCommandName(args[2]);
+            if (category == null) {
+                sender.sendMessage(LocaleLoader.getString("mcRPG.Choose.InvalidCategory",
+                        args[2], ChooseSpecializationCommand.categoryNamesText()));
                 return true;
             }
         }
@@ -70,21 +67,22 @@ public class SetSkillCommand implements TabExecutor {
             profile = stored;
         }
 
-        if (skill != null && profile.getSpecialization(slot.other()) == skill) {
-            sender.sendMessage(LocaleLoader.getString("mcRPG.SetSkill.SkillInOtherSlot",
-                    skillName(skill), playerName, slotName(slot.other())));
+        if (category != null && profile.getSpecialization(slot.other()) == category) {
+            sender.sendMessage(LocaleLoader.getString(
+                    "mcRPG.SetSpecialization.CategoryInOtherSlot", categoryName(category),
+                    playerName, slotName(slot.other())));
             return true;
         }
 
-        profile.setSpecialization(slot, skill);
+        profile.setSpecialization(slot, category);
         if (mmoPlayer == null) {
             profile.scheduleAsyncSave();
         }
 
-        sender.sendMessage(LocaleLoader.getString("mcRPG.SetSkill.Success", playerName,
-                slotName(slot), skill == null
+        sender.sendMessage(LocaleLoader.getString("mcRPG.SetSpecialization.Success", playerName,
+                slotName(slot), category == null
                         ? LocaleLoader.getString("mcRPG.Specialization.None")
-                        : skillName(skill)));
+                        : categoryName(category)));
         return true;
     }
 
@@ -92,16 +90,15 @@ public class SetSkillCommand implements TabExecutor {
     public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command,
             @NotNull String alias, String[] args) {
         return switch (args.length) {
-            case 1 -> ChooseSkillCommand.startingWith(args[0],
+            case 1 -> ChooseSpecializationCommand.startingWith(args[0],
                     CommandUtils.getOnlinePlayerNames(sender));
-            case 2 -> ChooseSkillCommand.startingWith(args[1],
-                    Arrays.stream(SpecializationSlot.values())
-                            .map(SpecializationSlot::commandName).toList());
+            case 2 -> ChooseSpecializationCommand.startingWith(args[1],
+                    ChooseSpecializationCommand.slotNames());
             case 3 -> {
-                final List<String> options = new ArrayList<>(
-                        ChooseSkillCommand.availableSkillNames());
+                final List<String> options =
+                        new ArrayList<>(ChooseSpecializationCommand.categoryNames());
                 options.add(NONE);
-                yield ChooseSkillCommand.startingWith(args[2], options);
+                yield ChooseSpecializationCommand.startingWith(args[2], options);
             }
             default -> List.of();
         };

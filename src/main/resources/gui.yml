@@ -1,5 +1,5 @@
 #
-#  mcRPG: Specialization menu (/chooseskill)
+#  mcRPG: Specialization menu (/choosespecialization)
 #  Each category gets one row: its icon on the left, then its skills.
 #  Icons are Minecraft item names. Unknown names, or items that do not exist on this
 #  server's Minecraft version, fall back to the default icon.

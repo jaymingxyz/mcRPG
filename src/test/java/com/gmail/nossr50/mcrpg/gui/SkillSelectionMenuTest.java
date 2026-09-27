@@ -166,7 +166,7 @@ class SkillSelectionMenuTest extends MMOTestEnvironment {
     }
 
     @Test
-    void confirmingShouldChooseTheSkillAndCancellingShouldNot() {
+    void confirmingShouldChooseTheSkillsCategoryAndCancellingShouldNot() {
         openMenu().handleClick(click(slotOf(PrimarySkillType.MINING), false));
         final ConfirmChoiceMenu confirm = (ConfirmChoiceMenu) lastCreatedHolder();
 
@@ -175,7 +175,7 @@ class SkillSelectionMenuTest extends MMOTestEnvironment {
 
         confirm.handleClick(click(ConfirmChoiceMenu.CONFIRM, true));
         assertThat(profile.getSpecialization(SpecializationSlot.SECONDARY))
-                .isEqualTo(PrimarySkillType.MINING);
+                .isEqualTo(SkillCategory.METALLURGY);
     }
 
     @Test
@@ -187,20 +187,48 @@ class SkillSelectionMenuTest extends MMOTestEnvironment {
         menu.handleClick(click(slotOf(PrimarySkillType.ACROBATICS), false));
 
         assertThat(profile.getSpecialization(SpecializationSlot.PRIMARY))
-                .isEqualTo(PrimarySkillType.SWORDS);
+                .isEqualTo(SkillCategory.MELEE);
         assertThat(profile.getSpecialization(SpecializationSlot.SECONDARY))
-                .isEqualTo(PrimarySkillType.ACROBATICS);
+                .isEqualTo(SkillCategory.SURVIVALISM);
     }
 
     @Test
-    void clickingForAFilledSlotShouldChangeNothing() {
+    void clickingACategoryLabelShouldChooseThatCategory() {
         when(generalConfig.getSpecializationGuiConfirmation()).thenReturn(false);
-        profile.setSpecialization(SpecializationSlot.PRIMARY, PrimarySkillType.MINING);
+        final SkillSelectionMenu menu = openMenu();
+
+        // Blacksmithing's label is the first slot of the fifth row
+        menu.handleClick(click(36, true));
+
+        assertThat(profile.getSpecialization(SpecializationSlot.PRIMARY))
+                .isEqualTo(SkillCategory.BLACKSMITHING);
+    }
+
+    @Test
+    void everySkillAndLabelOnARowShouldMeanThatRowsCategory() {
+        final SkillSelectionMenu menu = openMenu();
+
+        for (Map.Entry<Integer, SkillCategory> label
+                : SkillSelectionMenu.categoryLabels().entrySet()) {
+            assertThat(menu.categoryAt(label.getKey())).isEqualTo(label.getValue());
+        }
+        for (Map.Entry<Integer, PrimarySkillType> skill
+                : SkillSelectionMenu.layout().entrySet()) {
+            assertThat(menu.categoryAt(skill.getKey()))
+                    .isEqualTo(SkillCategory.of(skill.getValue()));
+        }
+        assertThat(menu.categoryAt(SkillSelectionMenu.CLOSE)).isNull();
+    }
+
+    @Test
+    void clickingForAChosenSpecializationShouldChangeNothing() {
+        when(generalConfig.getSpecializationGuiConfirmation()).thenReturn(false);
+        profile.setSpecialization(SpecializationSlot.PRIMARY, SkillCategory.METALLURGY);
 
         openMenu().handleClick(click(slotOf(PrimarySkillType.SWORDS), true));
 
         assertThat(profile.getSpecialization(SpecializationSlot.PRIMARY))
-                .isEqualTo(PrimarySkillType.MINING);
+                .isEqualTo(SkillCategory.METALLURGY);
     }
 
     @Test

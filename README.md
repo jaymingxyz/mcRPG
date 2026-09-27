@@ -1,76 +1,36 @@
-# mcMMO
-The #1 RPG Mod for Minecraft
+# mcRPG
 
-## Useful URLs
-Website: http://www.mcmmo.org
+A Minecraft RPG plugin for Spigot and Paper, built on [mcMMO](https://github.com/mcMMO-Dev/mcMMO). Players train 19 skills by playing normally (mining, fighting, farming, brewing and more), but nobody masters everything: each player picks two **Specializations**, whole categories of skills that level much faster than the rest.
 
-Spigot Resource: https://spigot.mcmmo.org
+## How it works
 
-Polymart Resource: https://polymart.org/product/727/mcmmo
+- **Specializations:** choose a skill category as your Primary Specialization (1.25× XP) and another as your Secondary (1.0× XP) with `/choosespecialization` (`/csp`). Every skill in those categories earns that rate, and every other skill still levels at 0.35× XP.
+- **Choices stick:** the only way to change a Specialization is `/abandonspecialization` (`/asp`), and every skill in the abandoned category keeps just 10% of its XP.
+- **Slow, meaningful progress:** leveling follows mcMMO's Standard mode, with no XP boost perks and no XP rate events.
+- **Salvage and Smelting are full skills:** they earn their own XP, and Salvage Mastery returns more materials as you level.
+- **Focused on skills:** mcMMO's parties and chat channels are removed.
 
-Wiki: https://wiki.mcmmo.org/
+## Skill categories
 
-## API
-If you are using maven, you can add mcMMO API to your plugin by adding it to pom.xml like so...
+| Category | Skills |
+|----------|--------|
+| Melee Combat | Swords, Axes, Maces, Spears |
+| Ranged Combat | Archery, Crossbows, Tridents |
+| Metallurgy | Mining, Smelting, Excavation |
+| Botany | Woodcutting, Herbalism, Alchemy |
+| Blacksmithing | Repair, Salvage |
+| Survivalism | Taming, Acrobatics, Fishing, Unarmed |
 
-```
-<repository>
-    <id>neetgames</id>
-    <url>https://nexus.neetgames.com/repository/maven-releases/</url>
-</repository>
-```
-```
-<dependency>
-    <groupId>com.gmail.nossr50.mcMMO</groupId>
-    <artifactId>mcMMO</artifactId>
-    <version>put-the-version-here</version>
-</dependency>
-```
-### Builds
-Currently, you can obtain our builds via Spigot or Polymart:
+## Getting started
 
-http://spigot.mcmmo.org
+mcRPG needs Spigot or Paper for Minecraft 1.20.5 or newer (Maces need 1.21, Spears 1.21.11) and Java 17 or newer. Put `mcRPG.jar` in your server's `plugins` folder and restart. Players use `/choosespecialization` (or `/csp`) to open the Specialization menu and `/rpgstats` to see their skills.
 
-https://polymart.org/resource/mcmmo.727
+mcRPG doesn't import mcMMO player data, so it's meant for fresh installs.
 
-### Brief Description
-The goal of mcMMO is to take core Minecraft game mechanics and expand them into an extensive and quality RPG experience. Everything in mcMMO has been carefully thought out and is constantly being improved upon. Currently, mcMMO adds fourteen unique skills to train and level in. Each of these skills is highly customizable through our configuration files, allowing server admins to tweak mcMMO to best suit the needs of his or her server. Know that the mcMMO team is dedicated to providing an ever-evolving experience, and that we carefully read all feedback and bug reports in order to evaluate and balance the mechanics of mcMMO in every update.
+## Status
 
-## About the Team
-In December 2018, the original author and creator of mcMMO (nossr50) returned and took over the role of project lead once again, to develop and improve mcMMO.
+Early development: mcRPG is currently being tested on a small servers with friends. Expect (and report) bugs!
 
-#### Current mcMMO Devs
-[![nossr50](http://www.gravatar.com/avatar/f2ee41eedfd645fb4a3a2c8f6cb1b18c.png)](https://github.com/nossr50)
+## Credits and license
 
-### Former team members
-[![gmcferrin](http://www.gravatar.com/avatar/b64c52daf25d206b27650788b5813b7b.png)](https://github.com/gmcferrin)
-[![kashike](https://secure.gravatar.com/avatar/b5e86d6d443b957fd5cdee55501f3799.png)](https://github.com/kashike)
-[![electronicboy](https://secure.gravatar.com/avatar/44759c38d311ce09596de6a2d5b88036.png)](https://github.com/electronicboy)
-[![t00thpick1](http://www.gravatar.com/avatar/ee23c7794a0c40120c3474287c7bce06.png)](https://github.com/t00thpick1)
-[![bm01](http://www.gravatar.com/avatar/ec8146f5358177f12e9a252271bbc391.png)](https://github.com/bm01)
-[![Glitchfinder](http://www.gravatar.com/avatar/5aa4cce22f72ae9c002ecec30f061d00.png)](https://github.com/Glitchfinder)
-[![NuclearW](http://www.gravatar.com/avatar/90926bdcf1c8a75918df5ea5fa801ce6.png)](https://github.com/NuclearW)
-[![shatteredbeam](http://www.gravatar.com/avatar/cad3b5d7d39cf5387afb87f494389610.png)](https://github.com/shatteredbeam)
-[![TfT_02](http://www.gravatar.com/avatar/b8914f9970e1f6ffd5281ce4770e20a7.png)](https://github.com/TfT-02)
-[![riking](https://1.gravatar.com/avatar/aca9f37e569ac3a63929920035a91ba4.png)](https://github.com/riking)
-[![TheYeti](https://i.imgur.com/tzFrxdo.png)](https://github.com/TheYeti)
-
-#### Folia Contributors
-[<img src="https://github.com/HSGamer.png" width=80 alt="HSGamer">](https://github.com/HSGamer)
-[<img src="https://github.com/TechnicallyCoded.png" width=80 alt="TechnicallyCoded">](https://github.com/TechnicallyCoded)
-[<img src="https://github.com/Yomamaeatstoes.png" width=80 alt="Yomamaeatstoes">](https://github.com/Yomamaeatstoes)
-[<img src="https://github.com/Rockyers.png" width=80 alt="Rockyers">](https://github.com/Rockyers)
-
-## Compiling
-
-mcMMO uses Maven to manage dependencies, packaging, and shading of necessary classes; Maven is required to compile mcMMO. It is recommended to always use the latest version of maven.
-
-The typical command used to build mcMMO is: `mvn clean install`
-
-https://spigot.mcmmo.org for more up to date information.
-
-## Downloads
-
-https://www.spigotmc.org/resources/official-mcmmo-original-author-returns.64348/
-
-https://polymart.org/resource/mcmmo.727
+mcRPG is a fork of mcMMO, created by nossr50 and developed by the mcMMO contributors, and it follows mcMMO's development branch. Like mcMMO, it's licensed under the GNU GPL v3; see [LICENSE](LICENSE) and [NOTICE](NOTICE). mcRPG isn't affiliated with or endorsed by the mcMMO project, and it isn't related to other plugins named McRPG.

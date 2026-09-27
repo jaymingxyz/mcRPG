@@ -10,8 +10,8 @@ import static org.mockito.Mockito.when;
 
 import com.gmail.nossr50.config.experience.ExperienceConfig;
 import com.gmail.nossr50.datatypes.player.PlayerProfile;
-import com.gmail.nossr50.datatypes.skills.PrimarySkillType;
 import com.gmail.nossr50.mcMMO;
+import com.gmail.nossr50.mcrpg.specialization.SkillCategory;
 import com.gmail.nossr50.mcrpg.specialization.SpecializationSlot;
 import java.io.File;
 import java.nio.file.Files;
@@ -26,8 +26,10 @@ import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
 /**
- * FlatFile storage of the Primary and Secondary slots (fields 62 and 63). Empty slots are
- * written as NONE, because mcMMO's row parser treats empty fields as damaged data.
+ * FlatFile storage of the Primary and Secondary Specializations (fields 62 and 63), each a
+ * category name. One not chosen yet is written as NONE, because mcMMO's row parser treats
+ * empty fields as damaged data. Skill names saved by builds before 2026-09-27 load as their
+ * category.
  */
 class McRPGSpecializationStorageTest {
     private static final Logger logger = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
@@ -67,39 +69,39 @@ class McRPGSpecializationStorageTest {
     }
 
     @Test
-    void slotsShouldSurviveSaveAndReload() {
+    void specializationsShouldSurviveSaveAndReload() {
         final FlatFileDatabaseManager database = newDatabase();
         final PlayerProfile profile = new PlayerProfile("nossr50", PLAYER_UUID, 0);
-        profile.setSpecialization(SpecializationSlot.PRIMARY, PrimarySkillType.MINING);
-        profile.setSpecialization(SpecializationSlot.SECONDARY, PrimarySkillType.SMELTING);
+        profile.setSpecialization(SpecializationSlot.PRIMARY, SkillCategory.METALLURGY);
+        profile.setSpecialization(SpecializationSlot.SECONDARY, SkillCategory.BOTANY);
 
         assertThat(database.saveUser(profile)).isTrue();
         final PlayerProfile loaded = database.loadPlayerProfile(PLAYER_UUID);
 
         assertThat(loaded.getSpecialization(SpecializationSlot.PRIMARY))
-                .isEqualTo(PrimarySkillType.MINING);
+                .isEqualTo(SkillCategory.METALLURGY);
         assertThat(loaded.getSpecialization(SpecializationSlot.SECONDARY))
-                .isEqualTo(PrimarySkillType.SMELTING);
+                .isEqualTo(SkillCategory.BOTANY);
     }
 
     @Test
-    void emptySlotsShouldBeWrittenAsNoneAndLoadAsEmpty() throws Exception {
+    void unchosenSpecializationsShouldBeWrittenAsNoneAndLoadAsEmpty() throws Exception {
         final FlatFileDatabaseManager database = newDatabase();
         final PlayerProfile profile = new PlayerProfile("nossr50", PLAYER_UUID, 0);
-        profile.setSpecialization(SpecializationSlot.SECONDARY, PrimarySkillType.FISHING);
+        profile.setSpecialization(SpecializationSlot.SECONDARY, SkillCategory.SURVIVALISM);
 
         final StringBuilder line = new StringBuilder();
         database.writeUserToLine(profile, line);
         final String[] fields = line.toString().trim().split(":");
         assertThat(fields).hasSize(DATA_ENTRY_COUNT);
         assertThat(fields[PRIMARY_SKILL]).isEqualTo("NONE");
-        assertThat(fields[SECONDARY_SKILL]).isEqualTo("FISHING");
+        assertThat(fields[SECONDARY_SKILL]).isEqualTo("SURVIVALISM");
 
         database.saveUser(profile);
         final PlayerProfile loaded = database.loadPlayerProfile(PLAYER_UUID);
         assertThat(loaded.getSpecialization(SpecializationSlot.PRIMARY)).isNull();
         assertThat(loaded.getSpecialization(SpecializationSlot.SECONDARY))
-                .isEqualTo(PrimarySkillType.FISHING);
+                .isEqualTo(SkillCategory.SURVIVALISM);
     }
 
     @Test
@@ -111,16 +113,16 @@ class McRPGSpecializationStorageTest {
     }
 
     @Test
-    void missingOrUnknownSlotValuesShouldLoadAsEmpty() {
+    void missingOrUnknownValuesShouldLoadAsEmptyAndOldSkillNamesAsTheirCategory() {
         final String[] shortRow = new String[PRIMARY_SKILL];
         assertThat(FlatFileDatabaseManager.specializationFromField(shortRow, PRIMARY_SKILL))
                 .isNull();
 
         final String[] row = new String[DATA_ENTRY_COUNT];
-        row[PRIMARY_SKILL] = "not_a_skill";
-        row[SECONDARY_SKILL] = "mining";
+        row[PRIMARY_SKILL] = "not_a_category";
+        row[SECONDARY_SKILL] = "mining"; // saved by a build before 2026-09-27
         assertThat(FlatFileDatabaseManager.specializationFromField(row, PRIMARY_SKILL)).isNull();
         assertThat(FlatFileDatabaseManager.specializationFromField(row, SECONDARY_SKILL))
-                .isEqualTo(PrimarySkillType.MINING);
+                .isEqualTo(SkillCategory.METALLURGY);
     }
 }

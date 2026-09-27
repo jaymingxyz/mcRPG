@@ -307,10 +307,10 @@ class SQLDatabaseManagerTest {
     // Saving skill levels / XP
     // ------------------------------------------------------------------------
 
-    @ParameterizedTest(name = "{0} - saveUser persists mcRPG specialization slots")
+    @ParameterizedTest(name = "{0} - saveUser persists mcRPG Specializations")
     @MethodSource("dbFlavors")
-    void whenSavingSpecializationSlotsShouldPersistToDatabase(DbFlavor flavor) {
-        // GIVEN a new user with a Primary skill and an empty Secondary slot
+    void whenSavingSpecializationsShouldPersistToDatabase(DbFlavor flavor) {
+        // GIVEN a new user with a Primary Specialization and no Secondary
         SQLDatabaseManager databaseManager = createManagerFor(flavor);
         Player player = Mockito.mock(Player.class);
         UUID playerUuid = UUID.randomUUID();
@@ -323,16 +323,16 @@ class SQLDatabaseManagerTest {
             PlayerProfile playerProfile = databaseManager.newUser(player);
             playerProfile.setSpecialization(
                     com.gmail.nossr50.mcrpg.specialization.SpecializationSlot.PRIMARY,
-                    PrimarySkillType.MINING);
+                    com.gmail.nossr50.mcrpg.specialization.SkillCategory.METALLURGY);
 
             // WHEN it is saved and loaded again
             assertThat(databaseManager.saveUser(playerProfile)).isTrue();
             PlayerProfile retrievedUser = databaseManager.loadPlayerProfile(player.getName());
 
-            // THEN the Primary slot is kept and the empty Secondary slot stays empty
+            // THEN the Primary Specialization is kept and the Secondary stays unchosen
             assertThat(retrievedUser.getSpecialization(
                     com.gmail.nossr50.mcrpg.specialization.SpecializationSlot.PRIMARY))
-                    .isEqualTo(PrimarySkillType.MINING);
+                    .isEqualTo(com.gmail.nossr50.mcrpg.specialization.SkillCategory.METALLURGY);
             assertThat(retrievedUser.getSpecialization(
                     com.gmail.nossr50.mcrpg.specialization.SpecializationSlot.SECONDARY))
                     .isNull();

@@ -7,12 +7,14 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /**
- * mcRPG's six Specialization categories. They organize the skill list in /rpgstats, the
- * Specialization menu and the documentation, and don't limit which skills a player can choose.
- * The menu gives each category one row, so a category holds at most
- * {@link #MAX_SKILLS_PER_CATEGORY} skills.
+ * mcRPG's six skill categories. A player's Primary and Secondary Specializations are each one
+ * of these categories, and every skill in a chosen category earns that Specialization's XP
+ * rate. They also organize the skill list in /rpgstats and the Specialization menu. The menu
+ * gives each category one row, so a category holds at most {@link #MAX_SKILLS_PER_CATEGORY}
+ * skills.
  */
 public enum SkillCategory {
     MELEE(PrimarySkillType.SWORDS, PrimarySkillType.AXES, PrimarySkillType.MACES,
@@ -65,6 +67,43 @@ public enum SkillCategory {
     /** The locale key for this category's plain name, e.g. "Melee Combat". */
     public @NotNull String nameKey() {
         return localeKey() + ".Name";
+    }
+
+    /** The name used in commands, e.g. {@code metallurgy}. */
+    public @NotNull String commandName() {
+        return name().toLowerCase(Locale.ROOT);
+    }
+
+    /** Parses a category's command name, ignoring case, or returns null. */
+    public static @Nullable SkillCategory fromCommandName(@NotNull String name) {
+        for (SkillCategory category : values()) {
+            if (category.commandName().equalsIgnoreCase(name)) {
+                return category;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Reads a stored Specialization: a category name, or null for anything else. mcRPG builds
+     * before 2026-09-27 stored a single skill instead, which is read as that skill's category.
+     */
+    public static @Nullable SkillCategory fromStoredName(@Nullable String stored) {
+        if (stored == null || stored.isBlank()) {
+            return null;
+        }
+        final String name = stored.trim().toUpperCase(Locale.ROOT);
+        for (SkillCategory category : values()) {
+            if (category.name().equals(name)) {
+                return category;
+            }
+        }
+        for (PrimarySkillType skill : PrimarySkillType.values()) {
+            if (skill.name().equals(name)) {
+                return of(skill);
+            }
+        }
+        return null;
     }
 
     public static @NotNull SkillCategory of(@NotNull PrimarySkillType skill) {
