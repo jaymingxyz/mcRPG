@@ -158,6 +158,11 @@ public class PlayerProfile {
             return;
         }
 
+        // mcMMO's databases refuse a profile without a UUID every time, and log why
+        if (uuid == null) {
+            return;
+        }
+
         mcMMO.p.getLogger()
                 .severe("PlayerProfile saving failed for player: " + playerName + " " + uuid);
 

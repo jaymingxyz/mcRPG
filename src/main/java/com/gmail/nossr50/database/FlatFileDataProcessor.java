@@ -61,6 +61,7 @@ import static com.gmail.nossr50.database.FlatFileDatabaseManager.SKILLS_SALVAGE;
 import static com.gmail.nossr50.database.FlatFileDatabaseManager.SKILLS_SMELTING;
 import static com.gmail.nossr50.database.FlatFileDatabaseManager.PRIMARY_SKILL;
 import static com.gmail.nossr50.database.FlatFileDatabaseManager.SECONDARY_SKILL;
+import static com.gmail.nossr50.database.UsernamePlaceholder.isInvalidOldUsername;
 
 import com.gmail.nossr50.database.flatfile.FlatFileDataBuilder;
 import com.gmail.nossr50.database.flatfile.FlatFileDataContainer;
@@ -184,14 +185,12 @@ public class FlatFileDataProcessor {
 
         uuids.add(uuid);
 
-        if (names.contains(name)) {
+        // Any number of players can hold the placeholder, each having lost their name
+        final boolean holdsAName = !name.isEmpty() && !isInvalidOldUsername(name);
+        if (holdsAName && !names.add(name)) {
             builder.appendFlag(FlatFileDataFlag.DUPLICATE_NAME);
             anyBadData = true;
             badDataValues[USERNAME_INDEX] = true;
-        }
-
-        if (!name.isEmpty()) {
-            names.add(name);
         }
 
         //Make sure the data is up to date schema wise, if it isn't we adjust it to the correct size and flag it for repair
