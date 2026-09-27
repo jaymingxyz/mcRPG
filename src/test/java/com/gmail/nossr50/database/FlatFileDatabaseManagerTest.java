@@ -2759,9 +2759,9 @@ class FlatFileDatabaseManagerTest {
                             INVALID_OLD_USERNAME, INVALID_OLD_USERNAME,
                             LEGACY_FLATFILE_INVALID_OLD_USERNAME,
                             LEGACY_FLATFILE_INVALID_OLD_USERNAME)
-                    .map(placeholder -> rowWithName(
+                    .map(placeholder -> withMcRPGFields(rowWithName(
                             existingPlayerRowWith(UUID_INDEX, randomUUID().toString()),
-                            placeholder))
+                            placeholder)))
                     .toArray(String[]::new));
             final File usersFile = databaseManager.getUsersFile();
             final byte[] originalBytes = java.nio.file.Files.readAllBytes(usersFile.toPath());
@@ -2800,6 +2800,14 @@ class FlatFileDatabaseManagerTest {
     /** A row with its name replaced. */
     private static String rowWithName(String row, String playerName) {
         return playerName + row.substring(row.indexOf(':'));
+    }
+
+    /**
+     * mcRPG: a complete row, with mcRPG's Salvage, Smelting and Specialization fields (58-63)
+     * after mcMMO's. The sample rows here only have mcMMO's fields.
+     */
+    private static String withMcRPGFields(String row) {
+        return row + "0:0:0:0:NONE:NONE:";
     }
 
     /** nossr50's row with one field replaced. */
