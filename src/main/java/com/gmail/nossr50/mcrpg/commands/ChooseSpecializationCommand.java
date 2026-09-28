@@ -18,7 +18,8 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * /choosespecialization (alias /csp) opens the Specialization menu.
+ * /choosespecialization (aliases /csp, /specializations and /specialization) opens the
+ * Specialization menu.
  * /choosespecialization &lt;primary|secondary&gt; &lt;category&gt; chooses a category directly;
  * typing the full command counts as the player's confirmation.
  */

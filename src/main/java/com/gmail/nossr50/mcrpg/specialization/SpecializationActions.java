@@ -6,6 +6,7 @@ import static com.gmail.nossr50.mcrpg.specialization.SpecializationDisplay.slotN
 import com.gmail.nossr50.datatypes.player.PlayerProfile;
 import com.gmail.nossr50.locale.LocaleLoader;
 import com.gmail.nossr50.mcMMO;
+import com.gmail.nossr50.mcrpg.passive.CategoryPassiveDisplay;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
@@ -43,10 +44,16 @@ public final class SpecializationActions {
 
         final Specialization.ChooseResult result = Specialization.choose(profile, slot, category);
         switch (result) {
-            case SUCCESS -> player.sendMessage(LocaleLoader.getString("mcRPG.Choose.Success",
-                    categoryName(category), slotName(slot),
-                    SpecializationDisplay.skillList(category),
-                    SpecializationDisplay.multiplierText(slot.role())));
+            case SUCCESS -> {
+                player.sendMessage(LocaleLoader.getString("mcRPG.Choose.Success",
+                        categoryName(category), slotName(slot),
+                        SpecializationDisplay.skillList(category),
+                        SpecializationDisplay.multiplierText(slot.role())));
+                final String passive = CategoryPassiveDisplay.chooseMessage(profile, category);
+                if (passive != null) {
+                    player.sendMessage(passive);
+                }
+            }
             case SLOT_FILLED -> {
                 final SkillCategory current = profile.getSpecialization(slot);
                 player.sendMessage(LocaleLoader.getString("mcRPG.Choose.SlotFilled",

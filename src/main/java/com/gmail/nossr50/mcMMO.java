@@ -461,6 +461,8 @@ public class mcMMO extends JavaPlugin {
                 levelUpCommandManager.clearAll();
             }
             Alchemy.finishAllBrews();   // Finish all partially complete AlchemyBrewTasks to prevent vanilla brewing continuation on restart
+            // mcRPG: players save attribute modifiers, so don't leave Wooden Mastery's behind
+            com.gmail.nossr50.mcrpg.passive.MiningSpeedBoost.removeAll();
             if (partyConfig.isPartyEnabled()) {
                 getPartyManager().saveParties(); // Save our parties
             }
@@ -749,6 +751,10 @@ public class mcMMO extends JavaPlugin {
         // mcRPG: item wear and found enchantments for Salvage XP
         pluginManager.registerEvents(
                 new com.gmail.nossr50.mcrpg.salvage.SalvageTrackingListener(), this);
+        // mcRPG: category passives. Registered after EntityListener so armor masteries see
+        // mcMMO's damage changes
+        pluginManager.registerEvents(
+                new com.gmail.nossr50.mcrpg.passive.CategoryPassiveListener(), this);
         //        pluginManager.registerEvents(new CommandListener(this), this);
     }
 

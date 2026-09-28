@@ -3,6 +3,7 @@ package com.gmail.nossr50.mcrpg.commands;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -16,17 +17,22 @@ import com.gmail.nossr50.mcrpg.specialization.SkillCategory;
 import com.gmail.nossr50.mcrpg.specialization.SpecializationSlot;
 import com.gmail.nossr50.util.Permissions;
 import com.gmail.nossr50.util.player.UserManager;
+import java.io.InputStream;
+import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.inventory.Inventory;
+import org.bukkit.plugin.PluginDescriptionFile;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 /**
- * /choosespecialization chooses a category as a Specialization; /rpgsetspecialization lets
- * admins change Specializations without resetting any skills.
+ * /choosespecialization (also /csp, /specializations and /specialization) chooses a category
+ * as a Specialization; /rpgsetspecialization lets admins change Specializations without
+ * resetting any skills.
  */
 class ChooseAndSetSpecializationCommandTest extends MMOTestEnvironment {
     private static final Logger logger =
@@ -120,6 +126,48 @@ class ChooseAndSetSpecializationCommandTest extends MMOTestEnvironment {
                 new String[] {"p"})).containsExactly("primary");
         assertThat(chooseCommand.onTabComplete(player, command, "csp",
                 new String[] {"primary", "b"})).containsExactly("botany", "blacksmithing");
+    }
+
+    @Test
+    void specializationsAndSpecializationShouldBeAliasesOfChooseSpecialization()
+            throws Exception {
+        final PluginDescriptionFile pluginYml;
+        try (InputStream in = getClass().getResourceAsStream("/plugin.yml")) {
+            assertThat(in).isNotNull();
+            pluginYml = new PluginDescriptionFile(in);
+        }
+
+        assertThat(aliases(pluginYml.getCommands().get("choosespecialization")))
+                .containsExactly("csp", "specializations", "specialization");
+        // No other command claims those names
+        for (Map.Entry<String, Map<String, Object>> other : pluginYml.getCommands().entrySet()) {
+            if (other.getKey().equals("choosespecialization")) {
+                continue;
+            }
+            assertThat(other.getKey()).isNotIn("specializations", "specialization");
+            assertThat(aliases(other.getValue())).as(other.getKey())
+                    .doesNotContain("specializations", "specialization");
+        }
+    }
+
+    private static List<String> aliases(Map<String, Object> command) {
+        return command.get("aliases") instanceof List<?> list
+                ? list.stream().map(String::valueOf).toList() : List.of();
+    }
+
+    @Test
+    void specializationsWithNoArgumentsShouldOpenTheMenu() {
+        final Inventory menu = GuiTestSupport.prepareMenus();
+        try {
+            new ChooseSpecializationCommand().onCommand(player, command, "specializations",
+                    new String[0]);
+            new ChooseSpecializationCommand().onCommand(player, command, "specialization",
+                    new String[0]);
+
+            verify(player, times(2)).openInventory(menu);
+        } finally {
+            GuiTestSupport.reset();
+        }
     }
 
     // --- /rpgsetspecialization ---

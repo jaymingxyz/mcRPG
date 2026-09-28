@@ -5,6 +5,7 @@ import com.gmail.nossr50.datatypes.player.PlayerProfile;
 import com.gmail.nossr50.datatypes.skills.PrimarySkillType;
 import com.gmail.nossr50.locale.LocaleLoader;
 import com.gmail.nossr50.mcMMO;
+import com.gmail.nossr50.mcrpg.passive.CategoryPassiveDisplay;
 import com.gmail.nossr50.util.commands.CommandUtils;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
@@ -113,6 +114,10 @@ public final class SpecializationDisplay {
                         .doesPlayerHaveSkillPermission(permissionTarget, skill)) {
                     display.sendMessage(CommandUtils.displaySkill(profile, skill));
                 }
+            }
+            final String passive = CategoryPassiveDisplay.statsLine(profile, category);
+            if (passive != null) {
+                display.sendMessage(passive);
             }
         }
     }

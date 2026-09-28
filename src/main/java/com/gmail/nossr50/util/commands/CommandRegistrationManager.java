@@ -188,7 +188,7 @@ public final class CommandRegistrationManager {
 
             // mcRPG has no party system, so /party and /ptp are not registered
 
-            // mcRPG: Specialization commands (aliases /csp and /asp are in plugin.yml)
+            // mcRPG: Specialization commands (aliases such as /csp and /asp are in plugin.yml)
             spec("choosespecialization", "mcrpg.commands.choosespecialization",
                     () -> List.of(LocaleLoader.getString("Commands.Usage.0",
                                     "choosespecialization"),

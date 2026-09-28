@@ -9,6 +9,7 @@ import com.gmail.nossr50.datatypes.player.PlayerProfile;
 import com.gmail.nossr50.datatypes.skills.PrimarySkillType;
 import com.gmail.nossr50.locale.LocaleLoader;
 import com.gmail.nossr50.mcMMO;
+import com.gmail.nossr50.mcrpg.passive.CategoryPassiveDisplay;
 import com.gmail.nossr50.mcrpg.specialization.SkillCategory;
 import com.gmail.nossr50.mcrpg.specialization.Specialization;
 import com.gmail.nossr50.mcrpg.specialization.SpecializationActions;
@@ -172,6 +173,11 @@ public final class SkillSelectionMenu implements InventoryHolder {
                 SpecializationDisplay.skillList(category)));
         lore.add(LocaleLoader.getString("mcRPG.Menu.Skill.Rate",
                 SpecializationDisplay.multiplierText(role)));
+        final List<String> passive = CategoryPassiveDisplay.menuLore(profile, category);
+        if (!passive.isEmpty()) {
+            lore.add("");
+            lore.addAll(passive);
+        }
         lore.add("");
         lore.addAll(choiceLore(player, profile, category));
         return MenuItems.item(GuiConfig.getInstance().getCategoryIcon(category),

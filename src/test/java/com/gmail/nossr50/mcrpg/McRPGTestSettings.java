@@ -8,6 +8,7 @@ import com.gmail.nossr50.config.experience.ExperienceConfig;
 import com.gmail.nossr50.datatypes.experience.FormulaType;
 import com.gmail.nossr50.datatypes.skills.PrimarySkillType;
 import com.gmail.nossr50.mcMMO;
+import com.gmail.nossr50.mcrpg.passive.CategoryPassive;
 import com.gmail.nossr50.mcrpg.specialization.SpecializationRole;
 import org.mockito.MockedStatic;
 
@@ -18,7 +19,8 @@ public final class McRPGTestSettings {
 
     /**
      * Default LINEAR curve in Standard mode, the default specialization multipliers
-     * (1.25 / 1.0 / 0.35), 10% XP kept on abandon, a 30 second confirmation, and no level caps.
+     * (1.25 / 1.0 / 0.35), 10% XP kept on abandon, a 30 second confirmation, no level caps,
+     * and category passives on with their default values, unlocked at 25 combined levels.
      */
     public static void useDefaults(GeneralConfig generalConfig,
             MockedStatic<mcMMO> mockedMcMMO) {
@@ -41,5 +43,16 @@ public final class McRPGTestSettings {
         when(generalConfig.getSpecializationLoginReminder()).thenReturn(true);
         when(generalConfig.getLevelCap(any(PrimarySkillType.class)))
                 .thenReturn(Integer.MAX_VALUE);
+
+        when(generalConfig.getCategoryPassivesEnabled()).thenReturn(true);
+        when(generalConfig.getCategoryPassiveUnlockLevel()).thenReturn(25);
+        for (CategoryPassive passive : CategoryPassive.values()) {
+            when(generalConfig.getCategoryPassiveDamageReduction(passive))
+                    .thenReturn(passive.defaultDamageReduction());
+            when(generalConfig.getCategoryPassiveMiningSpeedBonus(passive))
+                    .thenReturn(passive.defaultMiningSpeedBonus());
+            when(generalConfig.getCategoryPassiveDurabilityLossReduction(passive))
+                    .thenReturn(passive.defaultDurabilityLossReduction());
+        }
     }
 }

@@ -700,3 +700,26 @@ Specialization:
         # Share of its total XP each skill in an abandoned Specialization keeps. Its level is
         # worked out again from the XP it keeps, so it keeps more than this share of its level
         XP_Kept_Percent: 10
+    # Category passives. Each works only while its category is one of the player's
+    # Specializations and the levels of the category's skills add up to Unlock_Level_Sum.
+    Passives:
+        Enabled: true
+        Unlock_Level_Sum: 25
+        # Armor masteries: Leather (Survivalism), Chainmail (Blacksmithing), Copper (Metallurgy)
+        # Damage_Reduction_Per_Piece: Percent less damage for each piece of that armor worn,
+        #   against damage armor protects from. At most 25. The defaults give a full set about
+        #   the protection of iron armor.
+        # Durability_Loss_Reduction: Percent chance each point of durability damage is ignored
+        Leather_Mastery:
+            Damage_Reduction_Per_Piece: 8
+            Durability_Loss_Reduction: 50
+        Chainmail_Mastery:
+            Damage_Reduction_Per_Piece: 4
+            Durability_Loss_Reduction: 50
+        Copper_Mastery:
+            Damage_Reduction_Per_Piece: 6
+            Durability_Loss_Reduction: 50
+        # Wooden tools (Botany). Mining_Speed_Bonus: Percent faster block breaking while holding one
+        Wooden_Mastery:
+            Mining_Speed_Bonus: 50
+            Durability_Loss_Reduction: 50

@@ -8,6 +8,7 @@ import com.gmail.nossr50.datatypes.MobHealthbarType;
 import com.gmail.nossr50.datatypes.party.PartyFeature;
 import com.gmail.nossr50.datatypes.skills.PrimarySkillType;
 import com.gmail.nossr50.datatypes.skills.SuperAbilityType;
+import com.gmail.nossr50.mcrpg.passive.CategoryPassive;
 import com.gmail.nossr50.util.text.StringUtils;
 import java.io.File;
 import java.util.ArrayList;
@@ -1193,5 +1194,43 @@ public class GeneralConfig extends BukkitConfig {
     public double getAbandonXpKeptPercent() {
         final double percent = config.getDouble("Specialization.Abandon.XP_Kept_Percent", 10D);
         return Math.min(100D, Math.max(0D, percent));
+    }
+
+    /** Whether category passives such as Leather Mastery work at all. */
+    public boolean getCategoryPassivesEnabled() {
+        return config.getBoolean("Specialization.Passives.Enabled", true);
+    }
+
+    /** The combined level a category's skills need to unlock its passive (at least 0). */
+    public int getCategoryPassiveUnlockLevel() {
+        return Math.max(0, config.getInt("Specialization.Passives.Unlock_Level_Sum", 25));
+    }
+
+    /**
+     * Percent less damage for each piece of the passive's armor worn, clamped to 0-25 so a
+     * full set never blocks everything.
+     */
+    public double getCategoryPassiveDamageReduction(@NotNull CategoryPassive passive) {
+        final double percent = config.getDouble(passivePath(passive,
+                "Damage_Reduction_Per_Piece"), passive.defaultDamageReduction());
+        return Math.min(25D, Math.max(0D, percent));
+    }
+
+    /** Percent faster mining with the passive's tools (at least 0). */
+    public double getCategoryPassiveMiningSpeedBonus(@NotNull CategoryPassive passive) {
+        return Math.max(0D, config.getDouble(passivePath(passive, "Mining_Speed_Bonus"),
+                passive.defaultMiningSpeedBonus()));
+    }
+
+    /** Percent chance each point of durability damage to the passive's gear is ignored (0-100). */
+    public double getCategoryPassiveDurabilityLossReduction(@NotNull CategoryPassive passive) {
+        final double percent = config.getDouble(passivePath(passive,
+                "Durability_Loss_Reduction"), passive.defaultDurabilityLossReduction());
+        return Math.min(100D, Math.max(0D, percent));
+    }
+
+    private static @NotNull String passivePath(@NotNull CategoryPassive passive,
+            @NotNull String setting) {
+        return "Specialization.Passives." + passive.configKey() + "." + setting;
     }
 }

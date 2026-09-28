@@ -10,6 +10,7 @@ import com.gmail.nossr50.datatypes.player.PlayerProfile;
 import com.gmail.nossr50.events.experience.McMMOPlayerLevelDownEvent;
 import com.gmail.nossr50.locale.LocaleLoader;
 import com.gmail.nossr50.mcMMO;
+import com.gmail.nossr50.mcrpg.passive.CategoryPassiveDisplay;
 import com.gmail.nossr50.mcrpg.specialization.SkillCategory;
 import com.gmail.nossr50.mcrpg.specialization.Specialization;
 import com.gmail.nossr50.mcrpg.specialization.SpecializationDisplay;
@@ -88,7 +89,7 @@ public class AbandonSpecializationCommand implements TabExecutor {
         final long now = clock.getAsLong();
         if (!confirming || pending == null || pending.category() != category
                 || now > pending.expiresAtMillis()) {
-            warn(player, preview, now);
+            warn(player, profile, preview, now);
             return true;
         }
 
@@ -121,8 +122,8 @@ public class AbandonSpecializationCommand implements TabExecutor {
         return category;
     }
 
-    private void warn(@NotNull Player player, @NotNull Specialization.AbandonPreview preview,
-            long now) {
+    private void warn(@NotNull Player player, @NotNull PlayerProfile profile,
+            @NotNull Specialization.AbandonPreview preview, long now) {
         final int timeoutSeconds = mcMMO.p.getGeneralConfig().getAbandonConfirmTimeoutSeconds();
         PENDING.put(player.getUniqueId(),
                 new PendingAbandon(preview.category(), now + timeoutSeconds * 1000L));
@@ -132,6 +133,10 @@ public class AbandonSpecializationCommand implements TabExecutor {
         for (Specialization.SkillAbandon each : preview.skills()) {
             player.sendMessage(LocaleLoader.getString("mcRPG.Abandon.WarningSkill",
                     skillName(each.skill()), each.oldLevel(), each.newLevel()));
+        }
+        final String passive = CategoryPassiveDisplay.abandonWarning(profile, preview.category());
+        if (passive != null) {
+            player.sendMessage(passive);
         }
         player.sendMessage(LocaleLoader.getString("mcRPG.Abandon.ConfirmPrompt",
                 preview.category().commandName(), timeoutSeconds));

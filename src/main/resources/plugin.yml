@@ -152,7 +152,7 @@ commands:
         permission: mcrpg.commands.reloadlocale
     # mcRPG: Specializations
     choosespecialization:
-        aliases: [ csp ]
+        aliases: [ csp, specializations, specialization ]
         description: Choose your Primary and Secondary Specializations
         permission: mcrpg.commands.choosespecialization
     abandonspecialization:
