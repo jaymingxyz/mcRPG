@@ -6,6 +6,7 @@ import com.gmail.nossr50.datatypes.player.PlayerProfile;
 import com.gmail.nossr50.datatypes.skills.PrimarySkillType;
 import com.gmail.nossr50.locale.LocaleLoader;
 import com.gmail.nossr50.mcMMO;
+import com.gmail.nossr50.mcrpg.commands.CategoryArgument;
 import com.gmail.nossr50.mcrpg.specialization.Specialization;
 import com.gmail.nossr50.util.EventUtils;
 import com.gmail.nossr50.util.Permissions;
@@ -53,8 +54,8 @@ public class SkillresetCommand implements TabExecutor {
                     skill = mcMMO.p.getSkillTools().matchSkill(args[0]);
                 }
 
-                editValues((Player) sender, UserManager.getPlayer(sender.getName()).getProfile(),
-                        skill);
+                editSkillArgument((Player) sender,
+                        UserManager.getPlayer(sender.getName()).getProfile(), args[0], skill);
                 return true;
 
             case 2:
@@ -97,12 +98,20 @@ public class SkillresetCommand implements TabExecutor {
                         }
                     }
 
-                    editValues(null, profile, skill);
+                    editSkillArgument(null, profile, args[1], skill);
                 } else {
-                    editValues(mmoPlayer.getPlayer(), mmoPlayer.getProfile(), skill);
+                    editSkillArgument(mmoPlayer.getPlayer(), mmoPlayer.getProfile(), args[1],
+                            skill);
                 }
 
-                handleSenderMessage(sender, playerName, skill);
+                // mcRPG: a category gets one confirmation
+                final String categoryMessage =
+                        CategoryArgument.modifiedMessage(args[1], playerName);
+                if (categoryMessage != null) {
+                    sender.sendMessage(categoryMessage);
+                } else {
+                    handleSenderMessage(sender, playerName, skill);
+                }
                 return true;
 
             default:
@@ -119,9 +128,11 @@ public class SkillresetCommand implements TabExecutor {
                 return StringUtil.copyPartialMatches(args[0], playerNames,
                         new ArrayList<>(playerNames.size()));
             case 2:
-                return StringUtil.copyPartialMatches(args[1],
-                        mcMMO.p.getSkillTools().LOCALIZED_SKILL_NAMES,
-                        new ArrayList<>(mcMMO.p.getSkillTools().LOCALIZED_SKILL_NAMES.size()));
+                // mcRPG: categories are offered after the skills
+                final List<String> names = CategoryArgument.skillsAndCategories(
+                        mcMMO.p.getSkillTools().LOCALIZED_SKILL_NAMES);
+                return StringUtil.copyPartialMatches(args[1], names,
+                        new ArrayList<>(names.size()));
             default:
                 return ImmutableList.of();
         }
@@ -162,7 +173,25 @@ public class SkillresetCommand implements TabExecutor {
     }
 
     private boolean validateArguments(CommandSender sender, String skillName) {
-        return skillName.equalsIgnoreCase("all") || !CommandUtils.isInvalidSkill(sender, skillName);
+        return skillName.equalsIgnoreCase("all")
+                || CategoryArgument.isCategory(skillName) // mcRPG: or a category
+                || !CommandUtils.isInvalidSkill(sender, skillName);
+    }
+
+    /**
+     * mcRPG: a category argument resets each of its skills. Anything else is reset as before:
+     * the skill, or every skill when {@code skill} is null.
+     */
+    private void editSkillArgument(Player player, PlayerProfile profile, String skillArgument,
+            PrimarySkillType skill) {
+        final List<PrimarySkillType> categorySkills = CategoryArgument.skillsOf(skillArgument);
+        if (categorySkills == null) {
+            editValues(player, profile, skill);
+            return;
+        }
+        for (PrimarySkillType each : categorySkills) {
+            editValues(player, profile, each);
+        }
     }
 
     protected static void handleSenderMessage(CommandSender sender, String playerName,

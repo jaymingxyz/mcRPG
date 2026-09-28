@@ -160,30 +160,30 @@ public final class CommandRegistrationManager {
                                     "<linear|exponential>")),
                     McconvertCommand::new),
 
-            // Experience Commands
+            // Experience Commands (mcRPG: the skill argument can also be a category)
             spec("rpgaddlevels", "mcrpg.commands.addlevels;mcrpg.commands.addlevels.others",
                     () -> List.of(LocaleLoader.getString("Commands.Usage.3.XP", "rpgaddlevels",
                             "[" + LocaleLoader.getString("Commands.Usage.Player") + "]",
-                            "<" + LocaleLoader.getString("Commands.Usage.Skill") + ">",
+                            "<" + LocaleLoader.getString("mcRPG.Usage.SkillOrCategory") + ">",
                             "<" + LocaleLoader.getString("Commands.Usage.Level") + ">")),
                     AddlevelsCommand::new),
             spec("rpgaddxp", "mcrpg.commands.addxp;mcrpg.commands.addxp.others", () -> List.of(
                     LocaleLoader.getString("Commands.Usage.3.XP", "rpgaddxp",
                             "[" + LocaleLoader.getString("Commands.Usage.Player") + "]",
-                            "<" + LocaleLoader.getString("Commands.Usage.Skill") + ">",
+                            "<" + LocaleLoader.getString("mcRPG.Usage.SkillOrCategory") + ">",
                             "<" + LocaleLoader.getString("Commands.Usage.XP") + ">")),
                     AddxpCommand::new),
             spec("rpgsetlevel", "mcrpg.commands.setlevel;mcrpg.commands.setlevel.others",
                     () -> List.of(LocaleLoader.getString("Commands.Usage.3.XP", "rpgsetlevel",
                             "[" + LocaleLoader.getString("Commands.Usage.Player") + "]",
-                            "<" + LocaleLoader.getString("Commands.Usage.Skill") + ">",
+                            "<" + LocaleLoader.getString("mcRPG.Usage.SkillOrCategory") + ">",
                             "<" + LocaleLoader.getString("Commands.Usage.Level") + ">")),
                     MmoeditCommand::new),
             // Only the main permission nodes are needed here, not the per-skill ones
             spec("rpgskillreset", "mcrpg.commands.skillreset;mcrpg.commands.skillreset.others",
                     () -> List.of(LocaleLoader.getString("Commands.Usage.2", "rpgskillreset",
                             "[" + LocaleLoader.getString("Commands.Usage.Player") + "]",
-                            "<" + LocaleLoader.getString("Commands.Usage.Skill") + ">")),
+                            "<" + LocaleLoader.getString("mcRPG.Usage.SkillOrCategory") + ">")),
                     SkillresetCommand::new),
 
             // mcRPG has no party system, so /party and /ptp are not registered

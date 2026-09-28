@@ -5,6 +5,7 @@ import com.gmail.nossr50.datatypes.player.PlayerProfile;
 import com.gmail.nossr50.datatypes.skills.PrimarySkillType;
 import com.gmail.nossr50.locale.LocaleLoader;
 import com.gmail.nossr50.mcMMO;
+import com.gmail.nossr50.mcrpg.commands.CategoryArgument;
 import com.gmail.nossr50.util.commands.CommandUtils;
 import com.gmail.nossr50.util.player.UserManager;
 import com.gmail.nossr50.util.skills.SkillTools;
@@ -61,8 +62,9 @@ public abstract class ExperienceCommand implements TabExecutor {
                     return true;
                 }
 
-                editValues((Player) sender, UserManager.getPlayer(sender.getName()).getProfile(),
-                        skill, Integer.parseInt(args[1]), isSilent(args));
+                editSkillArgument((Player) sender,
+                        UserManager.getPlayer(sender.getName()).getProfile(), args[0], skill,
+                        Integer.parseInt(args[1]), isSilent(args));
                 return true;
             } else if ((args.length == 3 && !isSilent(args))
                     || (args.length == 4 && isSilent(args))) {
@@ -111,16 +113,23 @@ public abstract class ExperienceCommand implements TabExecutor {
                         }
                     }
 
-                    editValues(null, profile, skill, value, isSilent(args));
+                    editSkillArgument(null, profile, args[1], skill, value, isSilent(args));
                 } else {
-                    editValues(mmoPlayer.getPlayer(), mmoPlayer.getProfile(), skill, value,
-                            isSilent(args));
+                    editSkillArgument(mmoPlayer.getPlayer(), mmoPlayer.getProfile(), args[1],
+                            skill, value, isSilent(args));
                 }
 
                 // -s silences the whole command; plugins dispatch it from console for XP
                 // rewards, and the confirmation would flood the log on every dispatch
                 if (!isSilent(args)) {
-                    handleSenderMessage(sender, playerName, skill);
+                    // mcRPG: a category gets one confirmation
+                    final String categoryMessage =
+                            CategoryArgument.modifiedMessage(args[1], playerName);
+                    if (categoryMessage != null) {
+                        sender.sendMessage(categoryMessage);
+                    } else {
+                        handleSenderMessage(sender, playerName, skill);
+                    }
                 }
                 return true;
             } else {
@@ -152,13 +161,16 @@ public abstract class ExperienceCommand implements TabExecutor {
                 // Self-targeting form like '/mmoedit all 1000': when the first argument is
                 // already a skill (or 'all'), the next argument is a number, not a skill
                 if (args[0].equalsIgnoreCase("all")
-                        || mcMMO.p.getSkillTools().matchSkill(args[0]) != null) {
+                        || mcMMO.p.getSkillTools().matchSkill(args[0]) != null
+                        || CategoryArgument.isCategory(args[0])) { // mcRPG
                     return ImmutableList.of();
                 }
 
-                return StringUtil.copyPartialMatches(args[1],
-                        mcMMO.p.getSkillTools().LOCALIZED_SKILL_NAMES,
-                        new ArrayList<>(mcMMO.p.getSkillTools().LOCALIZED_SKILL_NAMES.size()));
+                // mcRPG: categories are offered after the skills
+                final List<String> names = CategoryArgument.skillsAndCategories(
+                        mcMMO.p.getSkillTools().LOCALIZED_SKILL_NAMES);
+                return StringUtil.copyPartialMatches(args[1], names,
+                        new ArrayList<>(names.size()));
             default:
                 return ImmutableList.of();
         }
@@ -178,7 +190,24 @@ public abstract class ExperienceCommand implements TabExecutor {
 
     private boolean validateArguments(CommandSender sender, String skillName, String value) {
         return !(CommandUtils.isInvalidInteger(sender, value) || (!skillName.equalsIgnoreCase("all")
+                && !CategoryArgument.isCategory(skillName) // mcRPG: or a category
                 && CommandUtils.isInvalidSkill(sender, skillName)));
+    }
+
+    /**
+     * mcRPG: a category argument edits each of its skills. Anything else is edited as before:
+     * the skill, or every skill when {@code skill} is null.
+     */
+    private void editSkillArgument(Player player, PlayerProfile profile, String skillArgument,
+            PrimarySkillType skill, int value, boolean isSilent) {
+        final List<PrimarySkillType> categorySkills = CategoryArgument.skillsOf(skillArgument);
+        if (categorySkills == null) {
+            editValues(player, profile, skill, value, isSilent);
+            return;
+        }
+        for (PrimarySkillType each : categorySkills) {
+            editValues(player, profile, each, value, isSilent);
+        }
     }
 
     protected static void handleSenderMessage(CommandSender sender, String playerName,
