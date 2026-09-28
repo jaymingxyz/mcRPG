@@ -6,12 +6,16 @@ import com.gmail.nossr50.datatypes.player.PlayerProfile;
 import com.gmail.nossr50.events.experience.McMMOPlayerLevelUpEvent;
 import com.gmail.nossr50.events.fake.FakeEvent;
 import com.gmail.nossr50.mcrpg.specialization.SkillCategory;
+import com.gmail.nossr50.util.AttributeMapper;
 import com.gmail.nossr50.util.player.UserManager;
 import com.gmail.nossr50.util.sounds.SoundManager;
 import com.gmail.nossr50.util.sounds.SoundType;
 import com.gmail.nossr50.worldguard.WorldGuardManager;
 import com.gmail.nossr50.worldguard.WorldGuardUtils;
+import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
+import org.bukkit.attribute.Attribute;
+import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -25,17 +29,27 @@ import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.VisibleForTesting;
 
 /**
- * Applies category passives: armor masteries cut damage and armor wear, and Wooden Mastery
- * speeds up mining and cuts tool wear. Also tells players when a passive unlocks.
+ * Applies category passives: armor masteries add armor and toughness and cut armor wear, and
+ * Wooden Mastery speeds up mining and cuts tool wear. Also tells players when a passive
+ * unlocks.
  */
 public class CategoryPassiveListener implements Listener {
+    /** Null in tests and if the server lacks them, which turns the armor bonus off. */
+    @VisibleForTesting
+    static @Nullable Attribute armorAttribute = AttributeMapper.MAPPED_ARMOR;
+    @VisibleForTesting
+    static @Nullable Attribute toughnessAttribute = AttributeMapper.MAPPED_ARMOR_TOUGHNESS;
 
     /**
-     * Armor masteries. Runs after mcMMO's own HIGHEST damage handling (this listener is
-     * registered later), so the cut also covers mcMMO's bonus damage. Only damage that armor
-     * protects from is cut, which is the damage the armor modifier reduced.
+     * Armor masteries' bonus armor and toughness. The player's attributes aren't changed:
+     * instead the hit is shrunk before it reaches their armor, so their real armor leaves
+     * exactly what the boosted armor would (see {@link ArmorMath}). Only damage armor
+     * protects from is changed, which is the damage the armor modifier reduced. Runs after
+     * mcMMO's own HIGHEST damage handling (this listener is registered later), so it also
+     * covers mcMMO's bonus damage.
      */
     @SuppressWarnings("deprecation") // DamageModifier is the only way to see armor's share
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
@@ -46,15 +60,34 @@ public class CategoryPassiveListener implements Listener {
             return;
         }
         final PlayerProfile profile = profileWherePassivesWork(player);
-        if (profile == null) {
+        final AttributeInstance armor = attribute(player, armorAttribute);
+        final AttributeInstance toughness = attribute(player, toughnessAttribute);
+        if (profile == null || armor == null || toughness == null) {
             return;
         }
-        final double reduction = CategoryPassives.armorDamageReduction(profile,
+        final CategoryPassives.ArmorBonus bonus = CategoryPassives.armorBonus(profile,
                 player.getInventory().getArmorContents());
-        if (reduction > 0) {
-            // Setting the base damage works out armor, enchantments and absorption again
-            event.setDamage(event.getDamage() * (1D - reduction));
+        if (bonus.isNone()) {
+            return;
         }
+
+        // The damage that reaches armor: a helmet against falling blocks and a shield come first
+        double reachingArmor = event.getDamage();
+        for (EntityDamageEvent.DamageModifier before : List.of(
+                EntityDamageEvent.DamageModifier.HARD_HAT,
+                EntityDamageEvent.DamageModifier.BLOCKING)) {
+            if (event.isApplicable(before)) {
+                reachingArmor += event.getDamage(before);
+            }
+        }
+        if (reachingArmor <= 0) {
+            return;
+        }
+        final double equivalent = ArmorMath.equivalentDamage(reachingArmor, armor.getValue(),
+                toughness.getValue(), bonus.armor(), bonus.toughness());
+        // Those modifiers scale with the base damage, so scaling it scales what reaches armor.
+        // Setting the base damage works out armor, enchantments and absorption again.
+        event.setDamage(event.getDamage() * equivalent / reachingArmor);
     }
 
     /**
@@ -122,6 +155,11 @@ public class CategoryPassiveListener implements Listener {
             player.sendMessage(CategoryPassiveDisplay.unlockMessage(passive));
             SoundManager.sendSound(player, player.getLocation(), SoundType.SKILL_UNLOCKED);
         }
+    }
+
+    private static @Nullable AttributeInstance attribute(@NotNull Player player,
+            @Nullable Attribute type) {
+        return type == null ? null : player.getAttribute(type);
     }
 
     private static void updateMiningSpeed(@NotNull Player player, @Nullable ItemStack held) {

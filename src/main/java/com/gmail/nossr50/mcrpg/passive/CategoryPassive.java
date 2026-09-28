@@ -14,27 +14,36 @@ import org.jetbrains.annotations.Nullable;
  * {@link CategoryPassives}). Melee and Ranged have none.
  * <p>
  * The defaults here are the fallbacks for a config.yml without the setting, and match the
- * shipped config.yml. Armor masteries default to roughly the protection of iron for a full
- * set: the weaker the armor, the larger its bonus.
+ * shipped config.yml. Armor masteries add armor points and toughness to a full set (a quarter
+ * per piece), placing it among the vanilla sets:
+ * <ul>
+ * <li>Leather, 7 armor: 16 armor and 2 toughness, a step above iron (15, 0) and below diamond
+ * (20, 8)</li>
+ * <li>Chainmail, 12 armor: 20 armor and 9 toughness, a step above diamond and below netherite
+ * (20, 12)</li>
+ * <li>Copper, 10 armor: 15 armor, the same as iron</li>
+ * </ul>
  */
 public enum CategoryPassive {
-    LEATHER_MASTERY(SkillCategory.SURVIVALISM, "Leather_Mastery", 8, 0, 50),
-    CHAINMAIL_MASTERY(SkillCategory.BLACKSMITHING, "Chainmail_Mastery", 4, 0, 50),
-    COPPER_MASTERY(SkillCategory.METALLURGY, "Copper_Mastery", 6, 0, 50),
-    WOODEN_MASTERY(SkillCategory.BOTANY, "Wooden_Mastery", 0, 50, 50);
+    LEATHER_MASTERY(SkillCategory.SURVIVALISM, "Leather_Mastery", 9, 2, 0, 50),
+    CHAINMAIL_MASTERY(SkillCategory.BLACKSMITHING, "Chainmail_Mastery", 8, 9, 0, 50),
+    COPPER_MASTERY(SkillCategory.METALLURGY, "Copper_Mastery", 5, 0, 0, 50),
+    WOODEN_MASTERY(SkillCategory.BOTANY, "Wooden_Mastery", 0, 0, 50, 50);
 
     private final @NotNull SkillCategory category;
     private final @NotNull String configKey;
-    private final double defaultDamageReduction;
+    private final double defaultBonusArmor;
+    private final double defaultBonusToughness;
     private final double defaultMiningSpeedBonus;
     private final double defaultDurabilityLossReduction;
 
     CategoryPassive(@NotNull SkillCategory category, @NotNull String configKey,
-            double defaultDamageReduction, double defaultMiningSpeedBonus,
-            double defaultDurabilityLossReduction) {
+            double defaultBonusArmor, double defaultBonusToughness,
+            double defaultMiningSpeedBonus, double defaultDurabilityLossReduction) {
         this.category = category;
         this.configKey = configKey;
-        this.defaultDamageReduction = defaultDamageReduction;
+        this.defaultBonusArmor = defaultBonusArmor;
+        this.defaultBonusToughness = defaultBonusToughness;
         this.defaultMiningSpeedBonus = defaultMiningSpeedBonus;
         this.defaultDurabilityLossReduction = defaultDurabilityLossReduction;
     }
@@ -64,9 +73,14 @@ public enum CategoryPassive {
         return this != WOODEN_MASTERY;
     }
 
-    /** Percent less damage for each piece worn. Only armor masteries have a default above 0. */
-    public double defaultDamageReduction() {
-        return defaultDamageReduction;
+    /** Extra armor points for a full set. Only armor masteries have a default above 0. */
+    public double defaultBonusArmor() {
+        return defaultBonusArmor;
+    }
+
+    /** Extra armor toughness for a full set. */
+    public double defaultBonusToughness() {
+        return defaultBonusToughness;
     }
 
     /** Percent faster mining. Only Wooden Mastery has a default above 0. */

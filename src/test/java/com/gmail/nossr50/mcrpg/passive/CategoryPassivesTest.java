@@ -1,7 +1,6 @@
 package com.gmail.nossr50.mcrpg.passive;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.within;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -146,27 +145,27 @@ class CategoryPassivesTest extends MMOTestEnvironment {
     }
 
     @Test
-    void eachPieceOfMasteredArmorShouldCutDamage() {
+    void eachPieceOfMasteredArmorShouldGiveAQuarterOfTheFullSetBonus() {
         final ItemStack[] leatherSet = {item(Material.LEATHER_BOOTS),
                 item(Material.LEATHER_LEGGINGS), item(Material.LEATHER_CHESTPLATE),
                 item(Material.LEATHER_HELMET)};
-        assertThat(CategoryPassives.armorDamageReduction(profile, leatherSet)).isZero();
+        assertThat(CategoryPassives.armorBonus(profile, leatherSet).isNone()).isTrue();
 
         unlockLeatherMastery();
-        assertThat(CategoryPassives.armorDamageReduction(profile, leatherSet))
-                .isCloseTo(0.32, within(1e-9));
+        assertThat(CategoryPassives.armorBonus(profile, leatherSet))
+                .isEqualTo(new CategoryPassives.ArmorBonus(9, 2));
 
         // Empty slots and other armor don't count
         final ItemStack[] mixed = {item(Material.LEATHER_BOOTS), null,
                 item(Material.CHAINMAIL_CHESTPLATE), item(Material.IRON_HELMET)};
-        assertThat(CategoryPassives.armorDamageReduction(profile, mixed))
-                .isCloseTo(0.08, within(1e-9));
+        assertThat(CategoryPassives.armorBonus(profile, mixed))
+                .isEqualTo(new CategoryPassives.ArmorBonus(2.25, 0.5));
 
-        // Each piece counts toward its own mastery
+        // Each piece counts toward its own mastery: chainmail adds 8 / 4 and 9 / 4
         profile.setSpecialization(SpecializationSlot.PRIMARY, SkillCategory.BLACKSMITHING);
         profile.modifySkill(PrimarySkillType.REPAIR, 25);
-        assertThat(CategoryPassives.armorDamageReduction(profile, mixed))
-                .isCloseTo(0.12, within(1e-9));
+        assertThat(CategoryPassives.armorBonus(profile, mixed))
+                .isEqualTo(new CategoryPassives.ArmorBonus(4.25, 2.75));
     }
 
     @Test

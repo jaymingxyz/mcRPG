@@ -32,11 +32,19 @@ public final class CategoryPassiveDisplay {
     /** What the passive does with the configured numbers, e.g. "Wooden tools mine 50% faster…" */
     public static @NotNull String effect(@NotNull CategoryPassive passive) {
         final GeneralConfig config = mcMMO.p.getGeneralConfig();
-        final double main = passive.isArmorMastery()
-                ? config.getCategoryPassiveDamageReduction(passive)
-                : config.getCategoryPassiveMiningSpeedBonus(passive);
-        return LocaleLoader.getString(passive.effectKey(), formatNumber(main),
-                formatNumber(config.getCategoryPassiveDurabilityLossReduction(passive)));
+        final String durability =
+                formatNumber(config.getCategoryPassiveDurabilityLossReduction(passive));
+        if (!passive.isArmorMastery()) {
+            return LocaleLoader.getString(passive.effectKey(),
+                    formatNumber(config.getCategoryPassiveMiningSpeedBonus(passive)), durability);
+        }
+        final double toughness = config.getCategoryPassiveBonusToughness(passive);
+        final String toughnessText = toughness > 0
+                ? LocaleLoader.getString("mcRPG.Passive.Effect.Toughness", formatNumber(toughness))
+                : "";
+        return LocaleLoader.getString(passive.effectKey(),
+                formatNumber(config.getCategoryPassiveBonusArmor(passive)), toughnessText,
+                durability);
     }
 
     /** Why a locked passive isn't working yet, or null if it's active or turned off. */

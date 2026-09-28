@@ -24,8 +24,10 @@ class CategoryPassiveDefaultsTest {
         assertThat(config.getInt("Specialization.Passives.Unlock_Level_Sum")).isEqualTo(25);
         for (CategoryPassive passive : CategoryPassive.values()) {
             final String path = "Specialization.Passives." + passive.configKey() + ".";
-            assertThat(config.getDouble(path + "Damage_Reduction_Per_Piece"))
-                    .as("%s damage", passive).isEqualTo(passive.defaultDamageReduction());
+            assertThat(config.getDouble(path + "Bonus_Armor"))
+                    .as("%s armor", passive).isEqualTo(passive.defaultBonusArmor());
+            assertThat(config.getDouble(path + "Bonus_Toughness"))
+                    .as("%s toughness", passive).isEqualTo(passive.defaultBonusToughness());
             assertThat(config.getDouble(path + "Mining_Speed_Bonus"))
                     .as("%s speed", passive).isEqualTo(passive.defaultMiningSpeedBonus());
             assertThat(config.getDouble(path + "Durability_Loss_Reduction"))

@@ -65,23 +65,36 @@ public final class CategoryPassives {
         return status(profile, passive) == Status.ACTIVE;
     }
 
+    /** Extra armor points and armor toughness from armor masteries. */
+    public record ArmorBonus(double armor, double toughness) {
+        public static final ArmorBonus NONE = new ArmorBonus(0D, 0D);
+
+        public boolean isNone() {
+            return armor <= 0 && toughness <= 0;
+        }
+    }
+
     /**
-     * The share of damage (0 to 1) the player's active armor masteries remove, from every
-     * piece of mastered armor they wear. Mixed sets count each piece toward its own mastery.
+     * The armor and toughness the player's active armor masteries add. Each piece of mastered
+     * armor worn gives a quarter of its mastery's full-set bonus, and mixed sets count each
+     * piece toward its own mastery.
      *
      * @param armor the worn armor, as from {@code PlayerInventory#getArmorContents()}
      */
-    public static double armorDamageReduction(@NotNull PlayerProfile profile,
+    public static @NotNull ArmorBonus armorBonus(@NotNull PlayerProfile profile,
             @Nullable ItemStack @NotNull [] armor) {
         final GeneralConfig config = mcMMO.p.getGeneralConfig();
-        double percent = 0;
+        double bonusArmor = 0;
+        double bonusToughness = 0;
         for (ItemStack piece : armor) {
             final CategoryPassive passive = CategoryPassive.forItem(piece);
             if (passive != null && passive.isArmorMastery() && isActive(profile, passive)) {
-                percent += config.getCategoryPassiveDamageReduction(passive);
+                bonusArmor += config.getCategoryPassiveBonusArmor(passive) / 4D;
+                bonusToughness += config.getCategoryPassiveBonusToughness(passive) / 4D;
             }
         }
-        return Math.min(1D, percent / 100D);
+        return bonusArmor <= 0 && bonusToughness <= 0 ? ArmorBonus.NONE
+                : new ArmorBonus(bonusArmor, bonusToughness);
     }
 
     /**

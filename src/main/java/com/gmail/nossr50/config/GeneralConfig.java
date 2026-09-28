@@ -1207,13 +1207,23 @@ public class GeneralConfig extends BukkitConfig {
     }
 
     /**
-     * Percent less damage for each piece of the passive's armor worn, clamped to 0-25 so a
-     * full set never blocks everything.
+     * Extra armor points a full set of the passive's armor gets, a quarter per piece. Clamped
+     * to 0-30, Minecraft's most armor.
      */
-    public double getCategoryPassiveDamageReduction(@NotNull CategoryPassive passive) {
-        final double percent = config.getDouble(passivePath(passive,
-                "Damage_Reduction_Per_Piece"), passive.defaultDamageReduction());
-        return Math.min(25D, Math.max(0D, percent));
+    public double getCategoryPassiveBonusArmor(@NotNull CategoryPassive passive) {
+        final double armor = config.getDouble(passivePath(passive, "Bonus_Armor"),
+                passive.defaultBonusArmor());
+        return Math.min(30D, Math.max(0D, armor));
+    }
+
+    /**
+     * Extra armor toughness a full set of the passive's armor gets, a quarter per piece.
+     * Clamped to 0-20, Minecraft's most toughness.
+     */
+    public double getCategoryPassiveBonusToughness(@NotNull CategoryPassive passive) {
+        final double toughness = config.getDouble(passivePath(passive, "Bonus_Toughness"),
+                passive.defaultBonusToughness());
+        return Math.min(20D, Math.max(0D, toughness));
     }
 
     /** Percent faster mining with the passive's tools (at least 0). */

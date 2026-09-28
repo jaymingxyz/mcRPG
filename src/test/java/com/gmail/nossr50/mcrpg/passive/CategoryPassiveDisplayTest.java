@@ -43,8 +43,12 @@ class CategoryPassiveDisplayTest extends MMOTestEnvironment {
     @Test
     void effectsShouldShowTheConfiguredNumbers() {
         assertThat(CategoryPassiveDisplay.effect(CategoryPassive.LEATHER_MASTERY))
-                .isEqualTo("Each piece of leather armor you wear cuts damage taken by 8%, "
-                        + "and leather armor loses 50% less durability");
+                .isEqualTo("A full set of leather armor gets +9 armor and +2 armor toughness "
+                        + "(a quarter per piece), and leather armor loses 50% less durability");
+        // No toughness bonus, so it isn't mentioned
+        assertThat(CategoryPassiveDisplay.effect(CategoryPassive.COPPER_MASTERY))
+                .isEqualTo("A full set of copper armor gets +5 armor (a quarter per piece), "
+                        + "and copper armor loses 50% less durability");
         assertThat(CategoryPassiveDisplay.effect(CategoryPassive.WOODEN_MASTERY))
                 .isEqualTo("Wooden tools mine 50% faster and lose 50% less durability");
     }
@@ -99,10 +103,10 @@ class CategoryPassiveDisplayTest extends MMOTestEnvironment {
         assertThat(lore).allSatisfy(line -> assertThat(plain(line).length())
                 .isLessThanOrEqualTo(40));
         assertThat(String.join(" ", lore.stream().map(ChatColor::stripColor).toList()))
-                .isEqualTo("Passive: Leather Mastery Each piece of leather armor you wear "
-                        + "cuts damage taken by 8%, and leather armor loses 50% less "
-                        + "durability Locked: needs Survivalism as a Specialization and 25 "
-                        + "combined levels (now 0)");
+                .isEqualTo("Passive: Leather Mastery A full set of leather armor gets +9 "
+                        + "armor and +2 armor toughness (a quarter per piece), and leather "
+                        + "armor loses 50% less durability Locked: needs Survivalism as a "
+                        + "Specialization and 25 combined levels (now 0)");
     }
 
     @Test

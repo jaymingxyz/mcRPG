@@ -37,8 +37,11 @@ public class AttributeMapper {
     private static final String ATTACK_DAMAGE_1_21_3 = "attack_damage";
     private static final String ATTACK_DAMAGE_1_18_2 = "generic.attack_damage";
 
-    // mcRPG: Wooden Mastery's mining speed (the attribute was added in 1.20.5)
+    // mcRPG: Wooden Mastery's mining speed (the attribute was added in 1.20.5), and the armor
+    // masteries' armor calculations
     public static final @Nullable Attribute MAPPED_BLOCK_BREAK_SPEED;
+    public static final @Nullable Attribute MAPPED_ARMOR;
+    public static final @Nullable Attribute MAPPED_ARMOR_TOUGHNESS;
 
     // Add other attributes similarly...
     // For brevity, only key attributes are shown
@@ -50,6 +53,8 @@ public class AttributeMapper {
         MAPPED_MOVEMENT_SPEED = findAttribute(MOVEMENT_SPEED_1_18_2, MOVEMENT_SPEED_1_21_3);
         MAPPED_GENERIC_ATTACK_DAMAGE = findAttribute(ATTACK_DAMAGE_1_21_3, ATTACK_DAMAGE_1_18_2);
         MAPPED_BLOCK_BREAK_SPEED = findAttribute("block_break_speed", "player.block_break_speed");
+        MAPPED_ARMOR = findAttribute("armor", "generic.armor");
+        MAPPED_ARMOR_TOUGHNESS = findAttribute("armor_toughness", "generic.armor_toughness");
     }
 
     private static @Nullable Attribute findAttribute(String... keys) {

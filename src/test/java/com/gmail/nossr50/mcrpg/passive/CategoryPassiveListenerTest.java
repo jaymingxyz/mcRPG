@@ -2,6 +2,7 @@ package com.gmail.nossr50.mcrpg.passive;
 
 import static com.gmail.nossr50.mcrpg.passive.CategoryPassivesTest.item;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.within;
 import static org.mockito.AdditionalMatchers.eq;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyDouble;
@@ -45,6 +46,8 @@ class CategoryPassiveListenerTest extends MMOTestEnvironment {
     private final CategoryPassiveListener listener = new CategoryPassiveListener();
     private PlayerProfile profile;
     private Attribute originalSpeedAttribute;
+    private Attribute originalArmorAttribute;
+    private Attribute originalToughnessAttribute;
 
     @BeforeEach
     void setUp() throws InvalidSkillException {
@@ -52,12 +55,26 @@ class CategoryPassiveListenerTest extends MMOTestEnvironment {
         McRPGTestSettings.useDefaults(generalConfig, mockedMcMMO);
         profile = mmoPlayer.getProfile();
         originalSpeedAttribute = MiningSpeedBoost.speedAttribute;
+        originalArmorAttribute = CategoryPassiveListener.armorAttribute;
+        originalToughnessAttribute = CategoryPassiveListener.toughnessAttribute;
+
+        // A full leather set: 7 armor, no toughness
+        CategoryPassiveListener.armorAttribute = Attribute.GENERIC_ARMOR;
+        CategoryPassiveListener.toughnessAttribute = Attribute.GENERIC_ARMOR_TOUGHNESS;
+        final AttributeInstance armor = mock(AttributeInstance.class);
+        final AttributeInstance toughness = mock(AttributeInstance.class);
+        when(armor.getValue()).thenReturn(7D);
+        when(toughness.getValue()).thenReturn(0D);
+        when(player.getAttribute(Attribute.GENERIC_ARMOR)).thenReturn(armor);
+        when(player.getAttribute(Attribute.GENERIC_ARMOR_TOUGHNESS)).thenReturn(toughness);
     }
 
     @AfterEach
     void tearDown() {
         MiningSpeedBoost.remove(player);
         MiningSpeedBoost.speedAttribute = originalSpeedAttribute;
+        CategoryPassiveListener.armorAttribute = originalArmorAttribute;
+        CategoryPassiveListener.toughnessAttribute = originalToughnessAttribute;
         cleanUpStaticMocks();
     }
 
@@ -84,15 +101,47 @@ class CategoryPassiveListenerTest extends MMOTestEnvironment {
     }
 
     @Test
-    void masteredArmorShouldCutDamageThatArmorBlocks() {
+    void masteredArmorShouldProtectLikeTheBoostedArmor() {
         unlockLeatherMastery();
         wearLeatherSet();
         final EntityDamageEvent event = damage(10, -2.2);
 
         listener.onPlayerDamaged(event);
 
-        // 8% for each of 4 leather pieces
-        verify(event).setDamage(eq(6.8, 1e-9));
+        // The server's 7 armor then leaves what 16 armor and 2 toughness would
+        final double expected = ArmorMath.equivalentDamage(10, 7, 0, 9, 2);
+        assertThat(expected).isLessThan(10);
+        assertThat(ArmorMath.damageAfterArmor(expected, 7, 0))
+                .isCloseTo(ArmorMath.damageAfterArmor(10, 16, 2),
+                        within(1e-9));
+        verify(event).setDamage(eq(expected, 1e-9));
+    }
+
+    @Test
+    void aHelmetAgainstFallingBlocksShouldBeCountedBeforeArmor() {
+        unlockLeatherMastery();
+        wearLeatherSet();
+        final EntityDamageEvent event = damage(10, -2.0);
+        when(event.isApplicable(EntityDamageEvent.DamageModifier.HARD_HAT)).thenReturn(true);
+        when(event.getDamage(EntityDamageEvent.DamageModifier.HARD_HAT)).thenReturn(-2.5);
+
+        listener.onPlayerDamaged(event);
+
+        // 7.5 reaches armor; the base damage is scaled so the right amount reaches it
+        final double reaching = ArmorMath.equivalentDamage(7.5, 7, 0, 9, 2);
+        verify(event).setDamage(eq(10 * reaching / 7.5, 1e-9));
+    }
+
+    @Test
+    void armorBonusShouldBeSkippedIfTheServerLacksTheAttributes() {
+        unlockLeatherMastery();
+        wearLeatherSet();
+        CategoryPassiveListener.armorAttribute = null;
+        final EntityDamageEvent event = damage(10, -2.2);
+
+        listener.onPlayerDamaged(event);
+
+        verify(event, never()).setDamage(anyDouble());
     }
 
     @Test

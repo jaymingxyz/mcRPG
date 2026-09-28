@@ -706,18 +706,24 @@ Specialization:
         Enabled: true
         Unlock_Level_Sum: 25
         # Armor masteries: Leather (Survivalism), Chainmail (Blacksmithing), Copper (Metallurgy)
-        # Damage_Reduction_Per_Piece: Percent less damage for each piece of that armor worn,
-        #   against damage armor protects from. At most 25. The defaults give a full set about
-        #   the protection of iron armor.
+        # Bonus_Armor / Bonus_Toughness: Extra armor points and armor toughness for a full set
+        #   of that armor. Each piece worn gives a quarter. They protect exactly like vanilla
+        #   armor, so with the defaults a full mastered set compares to vanilla sets like this:
+        #     Leather:   7 armor -> 16 armor, 2 toughness. Above iron (15, 0), below diamond (20, 8)
+        #     Chainmail: 12 armor -> 20 armor, 9 toughness. Above diamond, below netherite (20, 12)
+        #     Copper:    10 armor -> 15 armor. The same as iron
         # Durability_Loss_Reduction: Percent chance each point of durability damage is ignored
         Leather_Mastery:
-            Damage_Reduction_Per_Piece: 8
+            Bonus_Armor: 9
+            Bonus_Toughness: 2
             Durability_Loss_Reduction: 50
         Chainmail_Mastery:
-            Damage_Reduction_Per_Piece: 4
+            Bonus_Armor: 8
+            Bonus_Toughness: 9
             Durability_Loss_Reduction: 50
         Copper_Mastery:
-            Damage_Reduction_Per_Piece: 6
+            Bonus_Armor: 5
+            Bonus_Toughness: 0
             Durability_Loss_Reduction: 50
         # Wooden tools (Botany). Mining_Speed_Bonus: Percent faster block breaking while holding one
         Wooden_Mastery:

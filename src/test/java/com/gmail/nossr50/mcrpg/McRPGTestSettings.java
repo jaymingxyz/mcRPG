@@ -47,8 +47,10 @@ public final class McRPGTestSettings {
         when(generalConfig.getCategoryPassivesEnabled()).thenReturn(true);
         when(generalConfig.getCategoryPassiveUnlockLevel()).thenReturn(25);
         for (CategoryPassive passive : CategoryPassive.values()) {
-            when(generalConfig.getCategoryPassiveDamageReduction(passive))
-                    .thenReturn(passive.defaultDamageReduction());
+            when(generalConfig.getCategoryPassiveBonusArmor(passive))
+                    .thenReturn(passive.defaultBonusArmor());
+            when(generalConfig.getCategoryPassiveBonusToughness(passive))
+                    .thenReturn(passive.defaultBonusToughness());
             when(generalConfig.getCategoryPassiveMiningSpeedBonus(passive))
                     .thenReturn(passive.defaultMiningSpeedBonus());
             when(generalConfig.getCategoryPassiveDurabilityLossReduction(passive))
