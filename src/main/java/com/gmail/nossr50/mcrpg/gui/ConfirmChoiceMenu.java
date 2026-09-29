@@ -17,14 +17,13 @@ import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.InventoryHolder;
 import org.jetbrains.annotations.NotNull;
 
 /**
  * Asks the player to confirm a choice made in the Specialization menu, since a Specialization
  * can only be changed again by abandoning it.
  */
-public final class ConfirmChoiceMenu implements InventoryHolder {
+public final class ConfirmChoiceMenu implements McRPGMenu {
     static final int SIZE = 27;
     static final int CONFIRM = 11;
     static final int CATEGORY = 13;
@@ -75,8 +74,8 @@ public final class ConfirmChoiceMenu implements InventoryHolder {
         return inventory;
     }
 
-    /** Handles a click anywhere while this menu is open. Every click is cancelled. */
-    void handleClick(@NotNull InventoryClickEvent event) {
+    @Override
+    public void handleClick(@NotNull InventoryClickEvent event) {
         event.setCancelled(true);
         if (!(event.getWhoClicked() instanceof Player player)) {
             return;

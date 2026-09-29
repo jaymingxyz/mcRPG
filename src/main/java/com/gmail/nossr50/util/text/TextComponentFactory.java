@@ -1,7 +1,6 @@
 package com.gmail.nossr50.util.text;
 
 import com.gmail.nossr50.config.RankConfig;
-import com.gmail.nossr50.datatypes.json.McMMOWebLinks;
 import com.gmail.nossr50.datatypes.skills.PrimarySkillType;
 import com.gmail.nossr50.datatypes.skills.SubSkillType;
 import com.gmail.nossr50.datatypes.skills.subskills.AbstractSubSkill;
@@ -23,7 +22,6 @@ import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 /**
  * Builds Adventure {@link Component} objects for mcMMO's JSON hover tooltips and clickable text.
@@ -72,63 +70,7 @@ public class TextComponentFactory {
                 currentLevel);
     }
 
-    // ---------------------------------------------------------------------------
-    // Wiki link
-    // ---------------------------------------------------------------------------
-
-    public static String getSubSkillWikiLink(@NotNull SubSkillType subSkillType) {
-        return "https://wiki.mcmmo.org/en/skills/"
-                + subSkillType.getParentSkill().toString().toLowerCase(Locale.ENGLISH) + "#"
-                + subSkillType.getWikiUrl().toLowerCase(Locale.ENGLISH);
-    }
-
-    public static void sendPlayerSubSkillWikiLink(
-            @NotNull Player player,
-            @NotNull String subskillformatted,
-            @NotNull SubSkillType subSkillType) {
-        if (!mcMMO.p.getGeneralConfig().getUrlLinksEnabled()) {
-            return;
-        }
-
-        final String wikiLink = getSubSkillWikiLink(subSkillType);
-
-        // Hover shows the sub-skill name and the URL in gray italic (JSON.URL.Header)
-        final Component hoverText = Component.text()
-                .append(Component.text(subskillformatted))
-                .append(Component.newline())
-                .append(LocaleLoader.getTextComponent("JSON.URL.Header", wikiLink))
-                .build();
-
-        final TextComponent wikiLinkComponent = Component.text()
-                .content(LocaleLoader.getString("Overhaul.mcMMO.MmoInfo.Wiki"))
-                .decoration(TextDecoration.UNDERLINED, true)
-                .clickEvent(ClickEvent.openUrl(wikiLink))
-                .hoverEvent(HoverEvent.showText(hoverText))
-                .build();
-
-        mcMMO.getAudiences().player(player).sendMessage(wikiLinkComponent);
-    }
-
-    // ---------------------------------------------------------------------------
-    // URL header bar
-    // ---------------------------------------------------------------------------
-
-    public static void sendPlayerUrlHeader(@NotNull Player player) {
-        final TextComponent prefix = LocaleLoader.getTextComponent(
-                "Overhaul.mcMMO.Url.Wrap.Prefix");
-        final TextComponent suffix = LocaleLoader.getTextComponent(
-                "Overhaul.mcMMO.Url.Wrap.Suffix");
-        final Component space = Component.space();
-
-        // TODO: Update system msg API
-        mcMMO.getAudiences().player(player).sendMessage(Component.textOfChildren(
-                prefix, space,
-                getWebLinkTextComponent(McMMOWebLinks.WEBSITE), space,
-                getWebLinkTextComponent(McMMOWebLinks.DISCORD), space,
-                getWebLinkTextComponent(McMMOWebLinks.WIKI), space,
-                getWebLinkTextComponent(McMMOWebLinks.SPIGOT), space,
-                suffix));
-    }
+    // mcRPG: mcMMO's wiki link and its Web/Discord/Wiki/Spigot link bar were removed
 
     // ---------------------------------------------------------------------------
     // Sub-skill list
@@ -215,38 +157,6 @@ public class TextComponentFactory {
                 textComponents.add(buildSubSkillButton(player, abstractSubSkill));
             }
         }
-    }
-
-    // ---------------------------------------------------------------------------
-    // Internal — web link components
-    // ---------------------------------------------------------------------------
-
-    private static Component getWebLinkTextComponent(@NotNull McMMOWebLinks webLinks) {
-        return Component.text()
-                .append(LocaleLoader.getTextComponent("JSON.Hover.AtSymbolURL"))
-                .append(webLinks.getLabelComponent())
-                .clickEvent(ClickEvent.openUrl(webLinks.getUrl()))
-                .insertion(webLinks.getUrl())
-                .hoverEvent(HoverEvent.showText(buildUrlHoverTooltip(webLinks)))
-                .build();
-    }
-
-    private static Component buildUrlHoverTooltip(@NotNull McMMOWebLinks webLinks) {
-        final TextComponent.Builder tooltip = Component.text()
-                .content(webLinks.getNiceTitle())
-                .append(Component.newline())
-                // URL displayed in gray italic — JSON.URL.Header=&7&o{0}
-                .append(LocaleLoader.getTextComponent("JSON.URL.Header", webLinks.getUrl()))
-                .append(Component.newline())
-                .append(Component.newline())
-                .append(webLinks.getDescriptionComponent());
-
-        final @Nullable TextComponent detail = webLinks.getDetailComponent();
-        if (detail != null) {
-            tooltip.append(Component.newline()).append(detail);
-        }
-
-        return tooltip.build();
     }
 
     // ---------------------------------------------------------------------------

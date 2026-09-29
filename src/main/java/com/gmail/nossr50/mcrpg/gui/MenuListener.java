@@ -5,7 +5,6 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryDragEvent;
-import org.bukkit.inventory.InventoryHolder;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -16,18 +15,14 @@ import org.jetbrains.annotations.NotNull;
 public class MenuListener implements Listener {
     @EventHandler(priority = EventPriority.LOW)
     public void onInventoryClick(@NotNull InventoryClickEvent event) {
-        final InventoryHolder holder = event.getInventory().getHolder();
-        if (holder instanceof SkillSelectionMenu menu) {
-            menu.handleClick(event);
-        } else if (holder instanceof ConfirmChoiceMenu menu) {
+        if (event.getInventory().getHolder() instanceof McRPGMenu menu) {
             menu.handleClick(event);
         }
     }
 
     @EventHandler(priority = EventPriority.LOW)
     public void onInventoryDrag(@NotNull InventoryDragEvent event) {
-        final InventoryHolder holder = event.getInventory().getHolder();
-        if (holder instanceof SkillSelectionMenu || holder instanceof ConfirmChoiceMenu) {
+        if (event.getInventory().getHolder() instanceof McRPGMenu) {
             event.setCancelled(true);
         }
     }

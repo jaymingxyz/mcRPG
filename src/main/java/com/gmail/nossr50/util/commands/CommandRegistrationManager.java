@@ -49,6 +49,7 @@ import com.gmail.nossr50.mcMMO;
 import com.gmail.nossr50.mcrpg.commands.AbandonSpecializationCommand;
 import com.gmail.nossr50.mcrpg.commands.ChooseSpecializationCommand;
 import com.gmail.nossr50.mcrpg.commands.SetSpecializationCommand;
+import com.gmail.nossr50.mcrpg.commands.SkillsCommand;
 import com.gmail.nossr50.util.text.StringUtils;
 import java.util.Arrays;
 import java.util.List;
@@ -206,6 +207,11 @@ public final class CommandRegistrationManager {
                             "<" + LocaleLoader.getString("Commands.Usage.Player") + ">",
                             "<primary|secondary>", "<category|none>")),
                     SetSpecializationCommand::new),
+            // mcRPG: the skills menu (the /rpgskills alias is in plugin.yml)
+            spec("skills", "mcrpg.commands.skills",
+                    () -> List.of(LocaleLoader.getString("Commands.Usage.1", "skills",
+                            "[" + LocaleLoader.getString("Commands.Usage.Skill") + "]")),
+                    SkillsCommand::new),
 
             // Player Commands
             spec("rpginspect",

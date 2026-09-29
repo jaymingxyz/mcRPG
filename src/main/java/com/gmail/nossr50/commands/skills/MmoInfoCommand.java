@@ -4,7 +4,6 @@ import com.gmail.nossr50.datatypes.skills.SubSkillType;
 import com.gmail.nossr50.locale.LocaleLoader;
 import com.gmail.nossr50.mcMMO;
 import com.gmail.nossr50.util.Permissions;
-import com.gmail.nossr50.util.text.TextComponentFactory;
 import com.google.common.collect.ImmutableList;
 import java.util.ArrayList;
 import java.util.List;
@@ -82,8 +81,8 @@ public class MmoInfoCommand implements TabExecutor {
                 subSkillType.getLocaleName()));
         player.sendMessage(LocaleLoader.getString("Commands.MmoInfo.DetailsHeader"));
 
-        //Send Player Wiki Link
-        TextComponentFactory.sendPlayerSubSkillWikiLink(player, subSkillType.getLocaleName(),
-                subSkillType);
+        // mcRPG: the description replaces mcMMO's wiki link
+        player.sendMessage(LocaleLoader.getString("mcRPG.MmoInfo.Description",
+                subSkillType.getLocaleDescription()));
     }
 }

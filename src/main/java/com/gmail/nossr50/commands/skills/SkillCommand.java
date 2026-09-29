@@ -102,13 +102,7 @@ public abstract class SkillCommand implements TabExecutor {
             //Stats
             getStatMessages(player, isLucky, hasEndurance, skillValue);
 
-            //Header
-
-            //Link Header
-            if (mcMMO.p.getGeneralConfig().getUrlLinksEnabled()) {
-                player.sendMessage(LocaleLoader.getString("Overhaul.mcMMO.Header"));
-                TextComponentFactory.sendPlayerUrlHeader(player);
-            }
+            // mcRPG: no link header to mcMMO's website, Discord, wiki and Spigot page
 
             if (mcMMO.p.getGeneralConfig().getScoreboardsEnabled() && mcMMO.p.getGeneralConfig()
                     .getSkillUseBoard()) {

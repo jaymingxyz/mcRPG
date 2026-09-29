@@ -231,10 +231,6 @@ public class GeneralConfig extends BukkitConfig {
         return config.getBoolean("General.Show_Profile_Loaded", true);
     }
 
-    public boolean getDonateMessageEnabled() {
-        return config.getBoolean("Commands.mcmmo.Donate_Message", true);
-    }
-
     public int getSaveInterval() {
         return config.getInt("General.Save_Interval", 10);
     }
@@ -754,9 +750,7 @@ public class GeneralConfig extends BukkitConfig {
      */
 
     /* General Settings */
-    public boolean getUrlLinksEnabled() {
-        return config.getBoolean("Commands.Skills.URL_Links");
-    }
+    // mcRPG: Commands.Skills.URL_Links is gone along with mcMMO's links
 
     public boolean getAbilityMessagesEnabled() {
         if (abilityMessagesEnabled == null) {

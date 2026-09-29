@@ -28,7 +28,6 @@ import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -52,7 +51,7 @@ import org.jetbrains.annotations.VisibleForTesting;
  * make that category the Primary Specialization, right-click for Secondary. The menu never
  * abandons one; that is only done with /abandonspecialization.
  */
-public final class SkillSelectionMenu implements InventoryHolder {
+public final class SkillSelectionMenu implements McRPGMenu {
     static final int SIZE = 54;
     static final int PRIMARY_INDICATOR = 16;
     static final int SECONDARY_INDICATOR = 25;
@@ -87,9 +86,9 @@ public final class SkillSelectionMenu implements InventoryHolder {
 
     /**
      * Which inventory slot shows which skill: each category's skills follow its label on the
-     * category's row, leaving out skills that don't exist on this Minecraft version.
+     * category's row, leaving out skills that don't exist on this Minecraft version. The skills
+     * menu uses the same layout.
      */
-    @VisibleForTesting
     static @NotNull Map<Integer, PrimarySkillType> layout() {
         final Map<Integer, PrimarySkillType> slots = new LinkedHashMap<>();
         for (Map.Entry<Integer, SkillCategory> label : categoryLabels().entrySet()) {
@@ -102,7 +101,6 @@ public final class SkillSelectionMenu implements InventoryHolder {
     }
 
     /** The slot of each category's label: the first column of the category's row. */
-    @VisibleForTesting
     static @NotNull Map<Integer, SkillCategory> categoryLabels() {
         final SkillCategory[] categories = SkillCategory.values();
         if (categories.length > SIZE / 9) {
@@ -165,6 +163,20 @@ public final class SkillSelectionMenu implements InventoryHolder {
     /** A category's label: its skills, the XP rate they earn now, and how to choose it. */
     private static @NotNull ItemStack categoryLabel(@NotNull Player player,
             @NotNull PlayerProfile profile, @NotNull SkillCategory category) {
+        final List<String> lore = new ArrayList<>(categoryLore(profile, category));
+        lore.add("");
+        lore.addAll(choiceLore(player, profile, category));
+        return MenuItems.item(GuiConfig.getInstance().getCategoryIcon(category),
+                ChatColor.GOLD + categoryName(category), lore,
+                Specialization.slotOf(profile, category) != null);
+    }
+
+    /**
+     * What a category label says in both this menu and the skills menu: its skills, the XP rate
+     * they earn now, and its passive.
+     */
+    static @NotNull List<String> categoryLore(@NotNull PlayerProfile profile,
+            @NotNull SkillCategory category) {
         final SpecializationSlot slot = Specialization.slotOf(profile, category);
         final SpecializationRole role = slot == null ? SpecializationRole.UNSELECTED
                 : slot.role();
@@ -178,10 +190,7 @@ public final class SkillSelectionMenu implements InventoryHolder {
             lore.add("");
             lore.addAll(passive);
         }
-        lore.add("");
-        lore.addAll(choiceLore(player, profile, category));
-        return MenuItems.item(GuiConfig.getInstance().getCategoryIcon(category),
-                ChatColor.GOLD + categoryName(category), lore, slot != null);
+        return lore;
     }
 
     private static @NotNull ItemStack skillIcon(@NotNull Player player,
@@ -249,8 +258,8 @@ public final class SkillSelectionMenu implements InventoryHolder {
                 LocaleLoader.getString("mcRPG.Menu.Info.Line6", kept));
     }
 
-    /** Handles a click anywhere while this menu is open. Every click is cancelled. */
-    void handleClick(@NotNull InventoryClickEvent event) {
+    @Override
+    public void handleClick(@NotNull InventoryClickEvent event) {
         event.setCancelled(true);
         if (!(event.getWhoClicked() instanceof Player player)) {
             return;

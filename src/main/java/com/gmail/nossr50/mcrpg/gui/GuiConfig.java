@@ -13,7 +13,8 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.VisibleForTesting;
 
 /**
- * gui.yml: icons used by the Specialization menu. Loaded once, the first time the menu opens.
+ * gui.yml: icons used by the Specialization and skills menus. Loaded once, the first time a
+ * menu opens.
  * Unknown materials, or materials that don't exist on this Minecraft version, fall back to the
  * built-in defaults and then to paper.
  */

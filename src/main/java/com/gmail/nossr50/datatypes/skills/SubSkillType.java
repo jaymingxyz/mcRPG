@@ -239,14 +239,6 @@ public enum SubSkillType {
         return endResult.toString();
     }
 
-    public String getWikiUrl() {
-        // remove the text before the first underscore
-        int subStringIndex = getSubStringIndex(name());
-        String afterPrefix = name().substring(subStringIndex);
-        // replace _ or spaces with -
-        return afterPrefix.replace("_", "-").replace(" ", "-").toLowerCase(Locale.ENGLISH);
-    }
-
     /**
      * Returns the name of the parent skill from the Locale file
      *

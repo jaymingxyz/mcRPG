@@ -82,11 +82,10 @@ public final class McRPGRename {
             "party", "perks", "showversion", "skillreset", "skills", "tools", "*");
 
     /**
-     * Locale entries that credit mcMMO or link to its sites, so they keep its name. The English
-     * versions of these were rewritten by hand for mcRPG.
+     * Locale entries that credit mcMMO, so they keep its name. The English versions of these
+     * were rewritten by hand for mcRPG. (mcMMO's JSON.URL link entries were removed.)
      */
     private static final List<Pattern> KEEP_KEYS = List.of(
-            Pattern.compile("JSON\\.URL\\..*"),
             Pattern.compile("mcMMO\\.Description(\\..*)?"),
             Pattern.compile("MOTD\\.Website"));
 

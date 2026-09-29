@@ -3,8 +3,8 @@ package com.gmail.nossr50.commands;
 import com.gmail.nossr50.commands.party.PartySubcommandType;
 import com.gmail.nossr50.locale.LocaleLoader;
 import com.gmail.nossr50.mcMMO;
+import com.gmail.nossr50.mcrpg.McRPGLinks;
 import com.gmail.nossr50.util.Permissions;
-import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -24,14 +24,9 @@ public class McmmoCommand implements CommandExecutor {
                 String description = LocaleLoader.getString("mcMMO.Description");
                 String[] mcSplit = description.split(",");
                 sender.sendMessage(mcSplit);
-                sender.sendMessage(LocaleLoader.getString("mcMMO.Description.FormerDevs"));
-
-                if (mcMMO.p.getGeneralConfig().getDonateMessageEnabled()) {
-                    sender.sendMessage(LocaleLoader.getString("MOTD.Donate"));
-                    sender.sendMessage(
-                            ChatColor.GOLD + " - " + ChatColor.GREEN + "nossr50@gmail.com"
-                                    + ChatColor.GOLD + " Paypal");
-                }
+                // mcRPG: credits mcRPG's developer instead of listing mcMMO's, and has no
+                // PayPal donation message
+                McRPGLinks.send(sender, "mcRPG.Credit", McRPGLinks.REPOSITORY);
 
                 if (Permissions.showversion(sender)) {
                     sender.sendMessage(LocaleLoader.getString("MOTD.Version",
@@ -63,6 +58,7 @@ public class McmmoCommand implements CommandExecutor {
 
     private void displayGeneralCommands(CommandSender sender) {
         sender.sendMessage(LocaleLoader.getString("Commands.Stats"));
+        sender.sendMessage(LocaleLoader.getString("mcRPG.Help.Skills")); // mcRPG
         sender.sendMessage(LocaleLoader.getString("Commands.SkillInfo"));
         sender.sendMessage(LocaleLoader.getString("Commands.Leaderboards"));
 

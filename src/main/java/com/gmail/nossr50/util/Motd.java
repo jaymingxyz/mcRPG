@@ -28,24 +28,12 @@ public final class Motd {
 
     public static void displayAll(Player player) {
         final PluginDescriptionFile pluginDescription = mcMMO.p.getDescription();
-        displayVersion(player, pluginDescription.getVersion());
+        // mcRPG: no version line on login; /mcrpg still shows the version
         displayHardcoreSettings(player);
         displayCooldownPerks(player);
         displayActivationPerks(player);
         displayLuckyPerks(player);
         displayWebsite(player, pluginDescription.getWebsite());
-    }
-
-    /**
-     * Display version info.
-     *
-     * @param player Target player
-     * @param version Plugin version
-     */
-    public static void displayVersion(Player player, String version) {
-        if (Permissions.showversion(player)) {
-            player.sendMessage(LocaleLoader.getString("MOTD.Version.Overhaul", version));
-        }
     }
 
     /**

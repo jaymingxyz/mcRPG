@@ -26,9 +26,13 @@ class McRPGBrandingTest {
     private static final String FIX = "run 'java scripts/McRPGRename.java' from the plugin folder";
     /** An mcMMO permission node, but not a web address such as www.mcmmo.org. */
     private static final Pattern MCMMO_PERMISSION = Pattern.compile("(?<![\\w./:])mcmmo\\.");
-    /** English entries that credit mcMMO or link to its sites. */
+    /** English entries that credit mcMMO. */
     private static final Pattern KEEP_KEYS =
-            Pattern.compile("JSON\\.URL\\..*|mcMMO\\.Description(\\..*)?|MOTD\\.Website");
+            Pattern.compile("mcMMO\\.Description(\\..*)?|MOTD\\.Website");
+    /** mcMMO's website, wiki, Discord, GitHub, IRC and Spigot page, and donation contacts. */
+    private static final Pattern MCMMO_LINK = Pattern.compile("(?i)mcmmo\\.org|discord\\.gg/"
+            + "|github\\.com/mcMMO-Dev|irc\\.esper\\.net|paypal\\.(com|me)|nossr50@"
+            + "|neetgames\\.com|spigotmc\\.org/resources");
     /** mcMMO's command names, which mcRPG replaced with rpg-prefixed ones. */
     private static final Set<String> MCMMO_COMMANDS = Set.of("mcmmo", "mcstats", "mctop",
             "mcrank", "mmoedit", "mmoinfo", "mmoxpbar", "mmodebug", "mmopower", "mcability",
@@ -99,6 +103,26 @@ class McRPGBrandingTest {
         }
 
         assertThat(found).as("English text naming mcMMO; " + FIX).isEmpty();
+    }
+
+    @Test
+    void pluginShouldNotLinkToMcMMO() throws IOException {
+        final List<String> found = new ArrayList<>();
+        for (String root : List.of("src/main/java", "src/main/resources")) {
+            try (Stream<Path> files = Files.walk(Path.of(root))) {
+                for (Path file : files.filter(Files::isRegularFile).toList()) {
+                    final List<String> lines = Files.readAllLines(file, StandardCharsets.UTF_8);
+                    for (int i = 0; i < lines.size(); i++) {
+                        if (MCMMO_LINK.matcher(lines.get(i)).find()) {
+                            found.add(file + ":" + (i + 1));
+                        }
+                    }
+                }
+            }
+        }
+
+        // An mcMMO merge can bring these back; mcRPG players shouldn't be sent to mcMMO
+        assertThat(found).as("links to mcMMO's sites or contacts").isEmpty();
     }
 
     @Test

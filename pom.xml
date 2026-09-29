@@ -2,11 +2,11 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <!-- mcRPG: a fork of mcMMO (com.gmail.nossr50.mcMMO:mcMMO). The version stays mcMMO's, so
-         it shows which mcMMO build mcRPG is based on. -->
+    <!-- mcRPG: a fork of mcMMO (com.gmail.nossr50.mcMMO:mcMMO) with its own version number.
+         Keep this version when merging mcMMO updates, which change mcMMO's. -->
     <groupId>com.github.jaymingxyz</groupId>
     <artifactId>mcRPG</artifactId>
-    <version>2.3.003-SNAPSHOT</version>
+    <version>26.3-0.5.0</version>
     <name>mcRPG</name>
     <url>https://github.com/jaymingxyz/mcRPG</url>
     <scm>

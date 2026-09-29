@@ -162,7 +162,16 @@ commands:
     rpgsetspecialization:
         description: Set or clear a player's Primary or Secondary Specialization
         permission: mcrpg.commands.setspecialization
+    # mcRPG: skills menu
+    skills:
+        aliases: [ rpgskills ]
+        description: Browse every skill and how it works
+        permission: mcrpg.commands.skills
 permissions:
+    # mcRPG: skills menu
+    mcrpg.commands.skills:
+        default: true
+        description: Allows opening the skills menu
     # mcRPG: Specializations
     mcrpg.commands.choosespecialization:
         default: true
@@ -1546,4 +1555,4 @@ permissions:
             mcrpg.commands.woodcutting: true
     mcrpg.showversion:
         default: true
-        description: Show mcRPG version number in /mcrpg and motd
+        description: Show mcRPG version number in /mcrpg
