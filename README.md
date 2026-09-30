@@ -1,6 +1,6 @@
 # mcRPG
 
-A Minecraft RPG plugin for Spigot and Paper, built on [mcMMO](https://github.com/mcMMO-Dev/mcMMO). Players train 19 skills by playing normally (mining, fighting, farming, brewing and more), but nobody masters everything: each player picks two **Specializations**, whole categories of skills that level much faster than the rest.
+A Minecraft RPG plugin for Paper, which pushes players to specialize and work together. Forked from and inspired by [mcMMO](https://github.com/mcMMO-Dev/mcMMO). Players train 19 skills by playing normally (mining, fighting, farming, brewing and more), but nobody masters everything. Each player picks two **Specializations**, whole categories of skills that level much faster than the rest.
 
 **[Read the wiki](https://github.com/jaymingxyz/mcRPG/wiki)** for how Specializations work and a page on every skill.
 
@@ -32,16 +32,6 @@ A Minecraft RPG plugin for Spigot and Paper, built on [mcMMO](https://github.com
 **Server owners:** mcRPG is built for and exclusively tested on **Paper 26.3** and Java 17 or newer. Download `mcRPG.jar` from [Releases](https://github.com/jaymingxyz/mcRPG/releases), put it in your server's `plugins` folder and restart. See [Server Setup](https://github.com/jaymingxyz/mcRPG/wiki/Server-Setup) for the config files and storage options. Some other versions may work, use at your own risk.
 
 mcRPG doesn't import mcMMO player data, so it's meant for fresh installs. Don't run it alongside mcMMO.
-
-## Building
-
-You need JDK 17 or newer and [Maven](https://maven.apache.org/). Then run:
-
-```bash
-mvn clean package
-```
-
-The plugin is built to `target/mcRPG.jar`.
 
 ## Status
 
